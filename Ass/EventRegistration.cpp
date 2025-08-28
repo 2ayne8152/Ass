@@ -36,28 +36,28 @@ void eventMenu() {
 		inputCheck(selection, 1, 5, "Invalid Input! Please Retry [1-5]: ");
 
 		switch (selection) {
-		case 1: {
-			createEvent(events);
-			saveEventsToFile(events);
-			break;
-		}
-		case 2: {
-			makePayment(events);
-			break;
-		}
-		case 3: {
-			editEvents(events);
-			saveEventsToFile(events);
-			break;
-		}	  
-		case 4: {
-			viewEvents(events);
-			break;
-		}
-		case 5: {
-			condition = false;
-			return;
-		}
+			case 1: {
+				createEvent(events);
+				saveEventsToFile(events);
+				break;
+			}
+			case 2: {
+				makePayment(events);
+				break;
+			}
+			case 3: {
+				editEvents(events);
+				saveEventsToFile(events);
+				break;
+			}	  
+			case 4: {
+				viewEvents(events);
+				break;
+			}
+			case 5: {
+				condition = false;
+				return;
+			}
 		}
 	} while (condition);
 }
