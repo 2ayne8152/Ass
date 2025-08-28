@@ -30,6 +30,7 @@ void eventMenu() {
 		cout << "3. Edit Booking" << endl;
 		cout << "4. View Booking History" << endl;
 		cout << "5. Quit" << endl;
+		cout << "Select an option: ";
 	
 		int selection;
 		cin >> selection;
@@ -69,30 +70,69 @@ void createEvent(vector<Event>& events) {
 	int id = events.size() + 1;
 
 	cout << "\n=== Create New Event ===\n";
-	cout << "Enter Event Name: ";
-	getline(cin, name);
 
-	cout << "Enter Venue: ";
-	getline(cin, venue);
+	do {
+		cout << "Enter Event Name: ";
+		getline(cin, name);
+		if (name.empty()) cout << "Event name cannot be empty!\n";
+	} while (name.empty());
 
-	cout << "Enter Date (DD-MM-YYYY): ";
-	getline(cin, date);
+	do {
+		cout << "Enter Venue: ";
+		getline(cin, venue);
+		if (venue.empty()) cout << "Venue cannot be empty!\n";
+	} while (venue.empty());
 
-	cout << "Enter Start Time (HH:MM): ";
-	getline(cin, startTime);
+	do {
+		cout << "Enter Date (DD-MM-YYYY): ";
+		getline(cin, date);
+		if (!isValidDate(date)) cout << "Invalid date format or out-of-range date. Please retry.\n";
+	} while (!isValidDate(date));
 
-	cout << "Enter End Time (HH:MM): ";
-	getline(cin, endTime);
+	do {
+		cout << "Enter Start Time (HH:MM): ";
+		getline(cin, startTime);
+		if (!isValidTime(startTime)) cout << "Invalid start time. Use 24-hour format (HH:MM).\n";
+	} while (!isValidTime(startTime));
 
-	cout << "Enter Organizer Name: ";
-	getline(cin, organizer);
+	do {
+		cout << "Enter End Time (HH:MM): ";
+		getline(cin, endTime);
+		if (!isValidTime(endTime)) {
+			cout << "Invalid end time. Use 24-hour format (HH:MM).\n";
+			continue;
+		}
 
-	cout << "Enter Status (Upcoming/Ongoing/Completed): ";
-	getline(cin, status);
+		int startH, startM, endH, endM;
+		sscanf(startTime.c_str(), "%d:%d", &startH, &startM);
+		sscanf(endTime.c_str(), "%d:%d", &endH, &endM);
+
+		if ((endH * 60 + endM) <= (startH * 60 + startM)) {
+			cout << "End time must be after start time.\n";
+			continue;
+		}
+		break;
+	} while (true);
+
+	do {
+		cout << "Enter Organizer Name: ";
+		getline(cin, organizer);
+		if (organizer.empty()) cout << "Organizer name cannot be empty!\n";
+	} while (organizer.empty());
+
+	do {
+		cout << "Enter Status (Upcoming/Ongoing/Completed): ";
+		getline(cin, status);
+		for (auto& c : status) c = tolower(c);
+		if (status != "upcoming" && status != "ongoing" && status != "completed") {
+			cout << "Invalid status! Please enter Upcoming, Ongoing, or Completed.\n";
+			continue;
+		}
+		break;
+	} while (true);
 
 	events.emplace_back(id, name, venue, date, startTime, endTime, status, organizer);
-
-	cout << "\n Event created successfully!\n";
+	cout << "\nEvent created successfully!\n";
 }
 
 void viewEvents(const vector<Event> &events) {
@@ -159,44 +199,47 @@ void makePayment(vector<Event>& events) {
 }
 
 void editEvents(vector<Event>& events) {
-	vector<Event> editableEvents;
-	for (const auto& e : events) {
+	vector<Event*> editableEvents;
+	for (auto& e : events) {
 		if (e.status == "Upcoming") {
-			editableEvents.push_back(e);
+			editableEvents.push_back(&e);
 		}
 	}
+
 	if (editableEvents.empty()) {
-		cout << "No events to edit.\n";
+		cout << "\nNo events to edit.\n";
 		return;
 	}
-	viewEvents(editableEvents);
-	cout << "Enter Event ID to edit: ";
+
+	cout << "\n=== Editable Events (Upcoming) ===\n";
+	for (const auto& e : editableEvents) {
+		cout << "ID: " << e->id << " | " << e->name << " | " << e->date << " | " << e->status << "\n";
+	}
+
 	int id;
+	cout << "\nEnter Event ID to edit: ";
 	cin >> id;
 	inputCheck(id, 1, events.size(), "Invalid Event ID. Please try again: ");
-	for (const auto& e : editableEvents) {
-		if (e.id != id){
-			cout << "Event ID not editable or does not exist. Please try again.\n";
-			return;
+
+	Event* eventToEdit = nullptr;
+	for (auto& e : editableEvents) {
+		if (e->id == id) {
+			eventToEdit = e;
+			break;
 		}
 	}
 
-	//Find event by ID
-	auto it = find_if(events.begin(), events.end(), 
-		[id](const Event& e) { return e.id == id; });
-
-	if (it == events.end()) {
-		cout << "Event not found.\n";
+	if (!eventToEdit) {
+		cout << "Event ID not editable or does not exist.\n";
 		return;
 	}
 
-	Event& e = *it;
+	Event& e = *eventToEdit;
 	cin.ignore();
 
 	bool condition = true;
-
-	cout << "Editing Event: " << e.name << "(ID: " << e.id << ")\n";
 	do {
+		cout << "\n=== Editing Event: " << e.name << " (ID: " << e.id << ") ===\n";
 		cout << "1. Edit Name\n";
 		cout << "2. Edit Venue\n";
 		cout << "3. Edit Date\n";
@@ -204,46 +247,64 @@ void editEvents(vector<Event>& events) {
 		cout << "5. Edit End Time\n";
 		cout << "6. Edit Status\n";
 		cout << "7. Quit\n";
+		cout << "Select an option: ";
 
 		int selection;
 		cin >> selection;
 		inputCheck(selection, 1, 7, "Invalid Input! Please Retry [1-7]: ");
 		cin.ignore();
+
 		switch (selection) {
-			case 1: {
-				cout << "Enter new name: ";
-				getline(cin, e.name);
-				break;
-			}
-			case 2: {
-				cout << "Enter new venue: ";
-				getline(cin, e.venue);
-				break;
-			}
-			case 3: {
+		case 1: {
+			cout << "Enter new name: ";
+			getline(cin, e.name);
+			break;
+		}
+		case 2: {
+			cout << "Enter new venue: ";
+			getline(cin, e.venue);
+			break;
+		}
+		case 3: {
+			do {
 				cout << "Enter new date (DD-MM-YYYY): ";
 				getline(cin, e.date);
-				break;
-			}
-			case 4: {
+				if (!isValidDate(e.date)) cout << "Invalid date format! Please retry.\n";
+			} while (!isValidDate(e.date));
+			break;
+		}
+		case 4: {
+			do {
 				cout << "Enter new start time (HH:MM): ";
 				getline(cin, e.startTime);
-				break;
-			}
-			case 5: {
+				if (!isValidTime(e.startTime)) cout << "Invalid time format! Please retry.\n";
+			} while (!isValidTime(e.startTime));
+			break;
+		}
+		case 5: {
+			do {
 				cout << "Enter new end time (HH:MM): ";
 				getline(cin, e.endTime);
-				break;
-			}
-			case 6: {
+				if (!isValidTime(e.endTime)) cout << "Invalid time format! Please retry.\n";
+			} while (!isValidTime(e.endTime));
+			break;
+		}
+		case 6: {
+			do {
 				cout << "Enter new status (Upcoming/Ongoing/Completed): ";
 				getline(cin, e.status);
-				break;
-			}
-			case 7: {
-				condition = false;
-				break;
-			}
+				for (auto& c : e.status) c = tolower(c);
+				if (e.status != "upcoming" && e.status != "ongoing" && e.status != "completed") {
+					cout << "Invalid status! Please retry.\n";
+				}
+				else break;
+			} while (true);
+			break;
+		}
+		case 7: {
+			condition = false;
+			break;
+		}
 		}
 	} while (condition);
 }
@@ -306,4 +367,31 @@ void inputCheck(int& input, double min, double max, string errormsg) {
 		cout << '\n' << errormsg;
 		cin >> input;
 	}
+}
+
+bool isValidDate(const string& date) {
+	regex datePattern(R"(^([0-2][0-9]|3[01])-(0[1-9]|1[0-2])-(\d{4})$)");
+	if (!regex_match(date, datePattern)) return false;
+
+	// Extract day, month, year for logical validation
+	int day, month, year;
+	sscanf(date.c_str(), "%d-%d-%d", &day, &month, &year);
+
+	// Basic range checks
+	if (year < 1900 || year > 2100) return false;
+
+	// Days per month check (ignoring leap year first)
+	int daysInMonth[] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
+
+	// Leap year adjustment
+	if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) {
+		daysInMonth[1] = 29;
+	}
+
+	return (day >= 1 && day <= daysInMonth[month - 1]);
+}
+
+bool isValidTime(const string& time) {
+	regex timePattern(R"(^([01]\d|2[0-3]):([0-5]\d)$)");
+	return regex_match(time, timePattern);
 }
