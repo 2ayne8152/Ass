@@ -72,7 +72,6 @@ string getInput(const string& prompt) {
     return input;
 }
 
-
 void signUp(const string& role) {
     string username, email, password;
 
@@ -158,7 +157,6 @@ void signUp(const string& role) {
     }
 }
 
-
 void userMainMenu(const string& username) {
     cout << "hi user";
 }
@@ -222,32 +220,52 @@ void homePageMenu() {
         cout << "5. Exit\n";
         cout << "Choose an option: ";
 
-        string choice;
-        getline(cin, choice);
+        string choiceStr;
+        getline(cin, choiceStr);
 
-        if (choice == "1") {
+        // Check if input is a number
+        bool isValid = true;
+        for (char c : choiceStr) {
+            if (!isdigit(c)) {
+                isValid = false;
+                break;
+            }
+        }
+
+        if (!isValid || choiceStr.empty()) {
+            cout << "Invalid input! Please enter a number between 1 and 5.\n";
+            continue;
+        }
+
+        int choice = stoi(choiceStr); // Safe because we've validated digits
+
+        switch (choice) {
+        case 1:
             signUp("user");
-        }
-        else if (choice == "2") {
-            signUp("staff");
-        }
-        else if (choice == "3") {
-            login("user");
-        }
-        else if (choice == "4")
-        {
-            login("staff");
-        }
-        else if (choice == "5") {
-            cout << "Exiting program. Goodbye!\n";
             break;
-        }
-        else {
+
+        case 2:
+            signUp("staff");
+            break;
+
+        case 3:
+            login("user");
+            break;
+
+        case 4:
+            login("staff");
+            break;
+
+        case 5:
+            cout << "Exiting program. Goodbye!\n";
+            return;
+
+        default:
             cout << "Invalid choice. Please try again.\n";
+            break;
         }
     }
 }
-
 
 void staffMainMenu(const string& username) {
     int choice;
