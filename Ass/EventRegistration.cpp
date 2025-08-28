@@ -165,16 +165,21 @@ void editEvents(vector<Event>& events) {
 			editableEvents.push_back(e);
 		}
 	}
-	if (events.empty()) {
+	if (editableEvents.empty()) {
 		cout << "No events to edit.\n";
 		return;
 	}
-	
 	viewEvents(editableEvents);
 	cout << "Enter Event ID to edit: ";
 	int id;
 	cin >> id;
 	inputCheck(id, 1, events.size(), "Invalid Event ID. Please try again: ");
+	for (const auto& e : editableEvents) {
+		if (e.id != id){
+			cout << "Event ID not editable or does not exist. Please try again.\n";
+			return;
+		}
+	}
 
 	//Find event by ID
 	auto it = find_if(events.begin(), events.end(), 

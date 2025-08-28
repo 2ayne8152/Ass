@@ -290,13 +290,3 @@ void staffMainMenu(const string& username) {
         }
     }
 }
-
-void viewEventsMenu() {
-
-}
-
-int main() {
-    initializeStaffIdSystem();
-    homePageMenu();
-    return 0;
-}
