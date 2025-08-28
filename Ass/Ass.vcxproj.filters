@@ -24,14 +24,50 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="crisis.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="equipment.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="event_staff.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="events.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="equipment.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="event_staff.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="last_staff_id.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="staff.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="stages.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="users.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="abc.h">
+    <ClInclude Include="equipment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="event_staff.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="events.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

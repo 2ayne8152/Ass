@@ -123,15 +123,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="crisis.cpp" />
+    <ClCompile Include="equipment.cpp" />
+    <ClCompile Include="event_staff.cpp" />
     <ClCompile Include="Login.cpp" />
     <ClCompile Include="EventRegistration.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="equipment.txt" />
     <Text Include="events.txt" />
+    <Text Include="event_staff.txt" />
+    <Text Include="last_staff_id.txt" />
+    <Text Include="staff.txt" />
+    <Text Include="stages.txt" />
+    <Text Include="users.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="abc.h" />
+    <ClInclude Include="equipment.h" />
+    <ClInclude Include="events.h" />
+    <ClInclude Include="event_staff.h" />
+    <ClInclude Include="stage.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
