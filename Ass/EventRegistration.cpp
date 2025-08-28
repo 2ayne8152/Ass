@@ -184,6 +184,7 @@ void editEvents(vector<Event>& events) {
 	//Find event by ID
 	auto it = find_if(events.begin(), events.end(), 
 		[id](const Event& e) { return e.id == id; });
+
 	if (it == events.end()) {
 		cout << "Event not found.\n";
 		return;
