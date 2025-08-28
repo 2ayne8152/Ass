@@ -11,7 +11,6 @@ vector<Equipment> equipmentList;
 void loadEquipmentFromFile() {
     ifstream file("equipment.txt");
     equipmentList.clear();
-
     if (file.is_open()) {
         string line;
         while (getline(file, line)) {

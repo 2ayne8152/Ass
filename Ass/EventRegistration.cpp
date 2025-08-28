@@ -4,7 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <regex>
-#include "abc.h"
+#include "events.h"
 using namespace std;
 
 void eventMenu();
@@ -14,13 +14,9 @@ void makePayment(vector<Event>& events);
 void saveEventsToFile(const vector<Event>& events);
 void loadEventsFromFile(vector<Event>& events);
 void inputCheck(int& input, double min, double max, string errormsg);
+void editEvents(vector<Event>& events);
 
 const string FILE_NAME = "events.txt";
-
-int main() {
-	eventMenu();
-	return 0;
-}
 
 void eventMenu() {
 	vector<Event> events;
@@ -31,12 +27,13 @@ void eventMenu() {
 		cout << "==== Venue Booking Menu ====" << endl;
 		cout << "1. Book Venue" << endl;
 		cout << "2. Make Payment" << endl;
-		cout << "3. View Booking History" << endl;
-		cout << "4. Quit" << endl;
+		cout << "3. Edit Booking" << endl;
+		cout << "4. View Booking History" << endl;
+		cout << "5. Quit" << endl;
 	
 		int selection;
 		cin >> selection;
-		inputCheck(selection, 1, 4, "Invalid Input! Please Retry [1-4]: ");
+		inputCheck(selection, 1, 5, "Invalid Input! Please Retry [1-5]: ");
 
 		switch (selection) {
 		case 1: {
@@ -49,10 +46,15 @@ void eventMenu() {
 			break;
 		}
 		case 3: {
+			editEvents(events);
+			saveEventsToFile(events);
+			break;
+		}	  
+		case 4: {
 			viewEvents(events);
 			break;
 		}
-		case 4: {
+		case 5: {
 			condition = false;
 			return;
 		}
@@ -61,10 +63,10 @@ void eventMenu() {
 }
 
 void createEvent(vector<Event>& events) {
-	cin.ignore();  // Clear leftover newline from previous input
+	cin.ignore();
 
 	string name, venue, date, startTime, endTime, status, organizer;
-	int id = events.size() + 1; // Auto-increment ID
+	int id = events.size() + 1;
 
 	cout << "\n=== Create New Event ===\n";
 	cout << "Enter Event Name: ";
@@ -154,6 +156,90 @@ void makePayment(vector<Event>& events) {
 	events[index].paymentStatus = "Paid";
 
 	cout << "\nPayment successful for event: " << events[index].name << "\n";
+}
+
+void editEvents(vector<Event>& events) {
+	vector<Event> editableEvents;
+	for (const auto& e : events) {
+		if (e.status == "Upcoming") {
+			editableEvents.push_back(e);
+		}
+	}
+	if (events.empty()) {
+		cout << "No events to edit.\n";
+		return;
+	}
+	
+	viewEvents(editableEvents);
+	cout << "Enter Event ID to edit: ";
+	int id;
+	cin >> id;
+	inputCheck(id, 1, events.size(), "Invalid Event ID. Please try again: ");
+
+	//Find event by ID
+	auto it = find_if(events.begin(), events.end(), 
+		[id](const Event& e) { return e.id == id; });
+	if (it == events.end()) {
+		cout << "Event not found.\n";
+		return;
+	}
+
+	Event& e = *it;
+	cin.ignore();
+
+	bool condition = true;
+
+	cout << "Editing Event: " << e.name << "(ID: " << e.id << ")\n";
+	do {
+		cout << "1. Edit Name\n";
+		cout << "2. Edit Venue\n";
+		cout << "3. Edit Date\n";
+		cout << "4. Edit Start Time\n";
+		cout << "5. Edit End Time\n";
+		cout << "6. Edit Status\n";
+		cout << "7. Quit\n";
+
+		int selection;
+		cin >> selection;
+		inputCheck(selection, 1, 7, "Invalid Input! Please Retry [1-7]: ");
+		cin.ignore();
+		switch (selection) {
+			case 1: {
+				cout << "Enter new name: ";
+				getline(cin, e.name);
+				break;
+			}
+			case 2: {
+				cout << "Enter new venue: ";
+				getline(cin, e.venue);
+				break;
+			}
+			case 3: {
+				cout << "Enter new date (DD-MM-YYYY): ";
+				getline(cin, e.date);
+				break;
+			}
+			case 4: {
+				cout << "Enter new start time (HH:MM): ";
+				getline(cin, e.startTime);
+				break;
+			}
+			case 5: {
+				cout << "Enter new end time (HH:MM): ";
+				getline(cin, e.endTime);
+				break;
+			}
+			case 6: {
+				cout << "Enter new status (Upcoming/Ongoing/Completed): ";
+				getline(cin, e.status);
+				break;
+			}
+			case 7: {
+				condition = false;
+				break;
+			}
+		}
+	} while (condition);
 }
 
 void saveEventsToFile(const vector<Event>& events) {
