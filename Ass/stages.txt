@@ -1,0 +1,5 @@
+S1, Main Stage, 5000, true, IAMMUSIC
+S2, Second Stage, 3000, true, ""
+S3, Conference Hall, 800, true, ""
+S4, Outside Area, 2000, true, ""
+S5, VIP Lounge, 200, true, ""
