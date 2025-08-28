@@ -201,21 +201,18 @@ void makePayment(vector<Event>& events) {
 }
 
 void editEvents(vector<Event>& events) {
-	vector<Event*> editableEvents;
-	for (auto& e : events) {
+	vector<int> editableIds;
+	cout << "\n=== Editable Events (Upcoming) ===\n";
+	for (const auto& e : events) {
 		if (e.status == "Upcoming") {
-			editableEvents.push_back(&e);
+			editableIds.push_back(e.id);
+			cout << "ID: " << e.id << " | " << e.name << " | " << e.date << " | " << e.status << "\n";
 		}
 	}
 
-	if (editableEvents.empty()) {
+	if (editableIds.empty()) {
 		cout << "\nNo events to edit.\n";
 		return;
-	}
-
-	cout << "\n=== Editable Events (Upcoming) ===\n";
-	for (const auto& e : editableEvents) {
-		cout << "ID: " << e->id << " | " << e->name << " | " << e->date << " | " << e->status << "\n";
 	}
 
 	int id;
@@ -223,20 +220,16 @@ void editEvents(vector<Event>& events) {
 	cin >> id;
 	inputCheck(id, 1, events.size(), "Invalid Event ID. Please try again: ");
 
-	Event* eventToEdit = nullptr;
-	for (auto& e : editableEvents) {
-		if (e->id == id) {
-			eventToEdit = e;
-			break;
-		}
-	}
+	auto it = find_if(events.begin(), events.end(), [id](const Event& e) {
+		return e.id == id && e.status == "Upcoming";
+		});
 
-	if (!eventToEdit) {
+	if (it == events.end()) {
 		cout << "Event ID not editable or does not exist.\n";
 		return;
 	}
 
-	Event& e = *eventToEdit;
+	Event& e = *it; 
 	cin.ignore();
 
 	bool condition = true;
@@ -257,56 +250,59 @@ void editEvents(vector<Event>& events) {
 		cin.ignore();
 
 		switch (selection) {
-		case 1: {
-			cout << "Enter new name: ";
-			getline(cin, e.name);
-			break;
-		}
-		case 2: {
-			cout << "Enter new venue: ";
-			getline(cin, e.venue);
-			break;
-		}
-		case 3: {
-			do {
-				cout << "Enter new date (DD-MM-YYYY): ";
-				getline(cin, e.date);
-				if (!isValidDate(e.date)) cout << "Invalid date format! Please retry.\n";
-			} while (!isValidDate(e.date));
-			break;
-		}
-		case 4: {
-			do {
-				cout << "Enter new start time (HH:MM): ";
-				getline(cin, e.startTime);
-				if (!isValidTime(e.startTime)) cout << "Invalid time format! Please retry.\n";
-			} while (!isValidTime(e.startTime));
-			break;
-		}
-		case 5: {
-			do {
-				cout << "Enter new end time (HH:MM): ";
-				getline(cin, e.endTime);
-				if (!isValidTime(e.endTime)) cout << "Invalid time format! Please retry.\n";
-			} while (!isValidTime(e.endTime));
-			break;
-		}
-		case 6: {
-			do {
-				cout << "Enter new status (Upcoming/Ongoing/Completed): ";
-				getline(cin, e.status);
-				for (auto& c : e.status) c = tolower(c);
-				if (e.status != "upcoming" && e.status != "ongoing" && e.status != "completed") {
-					cout << "Invalid status! Please retry.\n";
-				}
-				else break;
-			} while (true);
-			break;
-		}
-		case 7: {
-			condition = false;
-			break;
-		}
+			case 1: {
+				cout << "Enter new name: ";
+				getline(cin, e.name);
+				break;
+			}
+			case 2: {
+				cout << "Enter new venue: ";
+				getline(cin, e.venue);
+				break;
+			}
+			case 3: {
+				do {
+					cout << "Enter new date (DD-MM-YYYY): ";
+					getline(cin, e.date);
+					if (!isValidDate(e.date)) cout << "Invalid date format! Please retry.\n";
+				} while (!isValidDate(e.date));
+				break;
+			}
+			case 4: {
+				do {
+					cout << "Enter new start time (HH:MM): ";
+					getline(cin, e.startTime);
+					if (!isValidTime(e.startTime)) cout << "Invalid time format! Please retry.\n";
+				} while (!isValidTime(e.startTime));
+				break;
+			}
+			case 5: {
+				do {
+					cout << "Enter new end time (HH:MM): ";
+					getline(cin, e.endTime);
+					if (!isValidTime(e.endTime)) cout << "Invalid time format! Please retry.\n";
+				} while (!isValidTime(e.endTime));
+				break;
+			}
+			case 6: {
+				do {
+					cout << "Enter new status (Upcoming/Ongoing/Completed): ";
+					getline(cin, e.status);
+					for (auto& c : e.status) c = tolower(c);
+					if (e.status != "upcoming" && e.status != "ongoing" && e.status != "completed") {
+						cout << "Invalid status! Please retry.\n";
+					}
+					else {
+						e.status[0] = toupper(e.status[0]); 
+						break;
+					}
+				} while (true);
+				break;
+			}
+			case 7: {
+				condition = false;
+				break;
+			}
 		}
 	} while (condition);
 }
