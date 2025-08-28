@@ -4,8 +4,28 @@
 #include <sstream>
 #include <regex>
 #include <iomanip>
-#include "abc.h"
+#include "event_staff.h"
+#include "stage.h"
 using namespace std;
+
+void staffMainMenu(const string& username);
+void userMainMenu(const string& username);
+void stageMenu();
+void crisisMenu();
+
+void initializeStaffIdSystem() {
+    ifstream file("last_staff_id.txt");
+    if (!file.is_open()) {
+        ofstream newFile("last_staff_id.txt");
+        if (newFile.is_open()) {
+            newFile << 0;
+            newFile.close();
+        }
+    }
+    else {
+        file.close();
+    }
+}
 
 bool isValidUsername(const string& username) {
     regex pattern("^[A-Za-z0-9_]{3,}$"); // letters, numbers, underscore, min 3 chars
@@ -18,8 +38,8 @@ bool isValidEmail(const string& email) {
 }
 
 bool isValidPassword(const string& password) {
-    if (password.length() < 6)
-        return false;
+    if (password.length() < 6) 
+        return false; 
     bool hasLetter = false, hasDigit = false;
     for (char c : password) {
         if (isalpha(c)) hasLetter = true;
@@ -58,7 +78,7 @@ void signUp(const string& role) {
 
     cout << "\n===== " << (role == "staff" ? "STAFF" : "USER") << " SIGN UP =====" << endl;
     cout << "(Type 'exit' at any time to cancel)\n";
-
+    
     // staff check passkey
     if (role == "staff") {
         string passkey;
@@ -129,7 +149,7 @@ void signUp(const string& role) {
         if (file.is_open()) {
             file << username << " " << email << " " << password << endl;
             file.close();
-            cout << (role == "staff" ? "Staff" : "User") << " sign up successful!" << ".\n";
+            cout <<  (role == "staff" ? "Staff" : "User") << " sign up successful!" << ".\n";
         }
         else {
             cout << "Error: Could not open file.\n";
@@ -138,9 +158,6 @@ void signUp(const string& role) {
     }
 }
 
-void staffMainMenu(const string& username) {
-    cout << "hi staff";
-}
 
 void userMainMenu(const string& username) {
     cout << "hi user";
@@ -202,7 +219,7 @@ void homePageMenu() {
         cout << "2. Sign Up (Staff)\n";
         cout << "3. Log In (User)\n";
         cout << "4. Log In (Staff)\n";
-        cout << "4. Exit\n";
+        cout << "5. Exit\n";
         cout << "Choose an option: ";
 
         string choice;
@@ -231,67 +248,55 @@ void homePageMenu() {
     }
 }
 
-void mainMenu() {
+
+void staffMainMenu(const string& username) {
     int choice;
     string input;
 
     while (true) {
-        cout << setw(27) << right << "BLABLABLA MENU\n";
-        cout << "=========================================\n\n";
-        cout << "1. Register account" << endl;
-        cout << "2. Register for Event" << endl;
-        cout << "3. Make Payment & Checkout" << endl;
-        cout << "4. Book Event Date" << endl;
-        cout << "5. View Event Marketing Info" << endl;
-        cout << "6. Monitor Ongoing Events" << endl;
-        cout << "7. Generate Event Reports" << endl;
-        cout << "8. Exit" << endl;
-        cout << "\n=========================================\n";
-        cout << "Enter a choice: ";
+        cout << "\n===== EVENT ORGANIZER STAFF MENU =====\n";
+        cout << "Welcome, " << username << "!\n";
+        cout << "1. Manage Event Staff\n";
+        cout << "2. View Events\n";
+        cout << "3. Crisis management\n";
+        cout << "4. Logout\n";
+        cout << "Choose an option: ";
 
-        getline(cin, input); // get input as string
-
+        getline(cin, input);
         stringstream ss(input);
-        if (!(ss >> choice) || (ss >> ws && !ss.eof())) {
-            cout << "Invalid input. Please enter a number between 1 and 7.\n\n";
-            continue; // skip the rest of the loop and ask again
+
+        if (!(ss >> choice)) {
+            cout << "Invalid input. Please enter a number.\n";
+            continue;
         }
 
         switch (choice) {
-        case 1:
-            signUp("staff");
+        case 1: {
+            vector<EventStaff> staffList = loadEventStaff();
+            manageEventStaffMenu(staffList);
             break;
+        }
         case 2:
-            signUp("users");
-            //cout << "Processing Payment & Checkout...\n";
-            // paymentAndCheckout();
+            cout << "Viewing events\n";
             break;
         case 3:
-            cout << "Booking Event Date & Logistics...\n";
-            // bookEventDate();
+            crisisMenu();
             break;
         case 4:
-            cout << "Viewing Event Marketing Info...\n";
-            // viewMarketing();
-            break;
-        case 5:
-            cout << "Monitoring Ongoing Events...\n";
-            // monitorEvents();
-            break;
-        case 6:
-            cout << "Generating Event Reports...\n";
-            // generateReports();
-            break;
-        case 7:
-            cout << "Exiting program. Goodbye!\n";
-            return; // exits the mainMenu() function
+            cout << "Logging out...\n";
+            return;
         default:
-            cout << "Invalid choice. Please select a number between 1 and 7.\n";
+            cout << "Invalid choice. Please try again.\n";
         }
-
     }
 }
 
-void main() {
+void viewEventsMenu() {
+
+}
+
+int main() {
+    initializeStaffIdSystem();
     homePageMenu();
+    return 0;
 }
