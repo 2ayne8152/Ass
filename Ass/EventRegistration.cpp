@@ -15,6 +15,8 @@ void saveEventsToFile(const vector<Event>& events);
 void loadEventsFromFile(vector<Event>& events);
 void inputCheck(int& input, double min, double max, string errormsg);
 void editEvents(vector<Event>& events);
+bool isValidTime(const string& time);
+bool isValidDate(const string& date);
 
 const string FILE_NAME = "events.txt";
 
@@ -104,8 +106,8 @@ void createEvent(vector<Event>& events) {
 		}
 
 		int startH, startM, endH, endM;
-		sscanf(startTime.c_str(), "%d:%d", &startH, &startM);
-		sscanf(endTime.c_str(), "%d:%d", &endH, &endM);
+		sscanf_s(startTime.c_str(), "%d:%d", &startH, &startM);
+		sscanf_s(endTime.c_str(), "%d:%d", &endH, &endM);
 
 		if ((endH * 60 + endM) <= (startH * 60 + startM)) {
 			cout << "End time must be after start time.\n";
@@ -373,22 +375,18 @@ bool isValidDate(const string& date) {
 	regex datePattern(R"(^([0-2][0-9]|3[01])-(0[1-9]|1[0-2])-(\d{4})$)");
 	if (!regex_match(date, datePattern)) return false;
 
-	// Extract day, month, year for logical validation
-	int day, month, year;
-	sscanf(date.c_str(), "%d-%d-%d", &day, &month, &year);
+	int day = stoi(date.substr(0, 2));
+	int month = stoi(date.substr(3, 2));
+	int year = stoi(date.substr(6, 4));
 
-	// Basic range checks
 	if (year < 1900 || year > 2100) return false;
 
-	// Days per month check (ignoring leap year first)
-	int daysInMonth[] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
+	int daysInMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-	// Leap year adjustment
-	if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) {
+	if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))
 		daysInMonth[1] = 29;
-	}
 
-	return (day >= 1 && day <= daysInMonth[month - 1]);
+	return day >= 1 && day <= daysInMonth[month - 1];
 }
 
 bool isValidTime(const string& time) {
