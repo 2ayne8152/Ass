@@ -7,9 +7,9 @@
 #include "events.h"
 using namespace std;
 
-void eventMenu();
-void createEvent(vector<Event>& events);
-void viewEvents(const vector<Event>& events);
+void eventMenu(const string& username);
+void createEvent(vector<Event>& events, const string& username);
+void viewEvents(const vector<Event>& events, const string& username);
 void makePayment(vector<Event>& events);
 void saveEventsToFile(const vector<Event>& events);
 void loadEventsFromFile(vector<Event>& events);
@@ -20,7 +20,7 @@ bool isValidDate(const string& date);
 
 const string FILE_NAME = "events.txt";
 
-void eventMenu() {
+void eventMenu(const string& username) {
 	vector<Event> events;
 	loadEventsFromFile(events);
 	bool condition = true;
@@ -40,12 +40,12 @@ void eventMenu() {
 
 		switch (selection) {
 			case 1: {
-				createEvent(events);
+				createEvent(events, username);
 				saveEventsToFile(events);
 				break;
 			}
 			case 2: {
-				makePayment(events);
+				makePayment(events, username);
 				break;
 			}
 			case 3: {
@@ -54,7 +54,7 @@ void eventMenu() {
 				break;
 			}	  
 			case 4: {
-				viewEvents(events);
+				viewEvents(events, username);
 				break;
 			}
 			case 5: {
@@ -65,10 +65,10 @@ void eventMenu() {
 	} while (condition);
 }
 
-void createEvent(vector<Event>& events) {
+void createEvent(vector<Event>& events, const string& username) {
 	cin.ignore();
 
-	string name, venue, date, startTime, endTime, status, organizer;
+	string name, venue, date, startTime, endTime;
 	int id = events.size() + 1;
 
 	cout << "\n=== Create New Event ===\n";
@@ -116,53 +116,41 @@ void createEvent(vector<Event>& events) {
 		break;
 	} while (true);
 
-	do {
-		cout << "Enter Organizer Name: ";
-		getline(cin, organizer);
-		if (organizer.empty()) cout << "Organizer name cannot be empty!\n";
-	} while (organizer.empty());
-
-	do {
-		cout << "Enter Status (Upcoming/Ongoing/Completed): ";
-		getline(cin, status);
-		for (auto& c : status) c = tolower(c);
-		if (status != "upcoming" && status != "ongoing" && status != "completed") {
-			cout << "Invalid status! Please enter Upcoming, Ongoing, or Completed.\n";
-			continue;
-		}
-		break;
-	} while (true);
-
-	events.emplace_back(id, name, venue, date, startTime, endTime, status, organizer);
+	events.emplace_back(id, name, venue, date, startTime, endTime, "Upcoming", username);
 	cout << "\nEvent created successfully!\n";
 }
 
-void viewEvents(const vector<Event> &events) {
-    cout << "\n=== Booking History ===\n";
-    if (events.empty()) {
-        cout << "No events have been booked yet.\n";
-        return;
-    }
+void viewEvents(const vector<Event>& events, const string& username) {
+	cout << "\n=== Your Booking History ===\n";
+	bool hasEvents = false;
 
-    for (const auto &e : events) {
-        cout << "\nEvent ID: " << e.id
-             << "\nName: " << e.name
-             << "\nVenue: " << e.venue
-             << "\nDate: " << e.date
-             << "\nTime: " << e.startTime << " - " << e.endTime
-             << "\nOrganizer: " << e.organizerName
-             << "\nStatus: " << e.status
-             << "\n-----------------------------";
-    }
-    cout << "\n";
+	for (const auto& e : events) {
+		if (e.organizerName == username) {
+			hasEvents = true;
+			cout << "\nEvent ID: " << e.id
+				<< "\nName: " << e.name
+				<< "\nVenue: " << e.venue
+				<< "\nDate: " << e.date
+				<< "\nTime: " << e.startTime << " - " << e.endTime
+				<< "\nOrganizer: " << e.organizerName
+				<< "\nStatus: " << e.status
+				<< "\nPayment Status: " << e.paymentStatus
+				<< "\n-----------------------------";
+		}
+	}
+
+	if (!hasEvents) {
+		cout << "You haven't created any events yet.\n";
+	}
+	cout << "\n";
 }
 
-void makePayment(vector<Event>& events) {
+void makePayment(vector<Event>& events, const string& username) {
 	cout << "\n=== Unpaid Events ===\n";
 
 	vector<int> unpaidIndexes;
 	for (int i = 0; i < events.size(); i++) {
-		if (events[i].paymentStatus == "Unpaid") {
+		if (events[i].paymentStatus == "Unpaid" && events[i].organizerName == username) {
 			unpaidIndexes.push_back(i);
 			cout << unpaidIndexes.size() << ". " // show 1-based selection
 				<< "\nEvent ID: " << events[i].id

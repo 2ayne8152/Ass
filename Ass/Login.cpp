@@ -1,12 +1,4 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <regex>
-#include <iomanip>
-#include "event_staff.h"
-#include "stage.h"
-using namespace std;
+#include "login.h"
 
 void staffMainMenu(const string& username);
 void userMainMenu(const string& username);
@@ -213,18 +205,16 @@ void login(const string& role) {
 void homePageMenu() {
     while (true) {
         cout << "\n===== HOME PAGE =====\n";
-        cout << "1. Sign Up (User)\n";
-        cout << "2. Sign Up (Staff)\n";
-        cout << "3. Log In (User)\n";
-        cout << "4. Log In (Staff)\n";
-        cout << "5. Exit\n";
+        cout << "1. Log In\n";
+        cout << "2. Sign Up\n";
+        cout << "3. Exit\n";
         cout << "Choose an option: ";
 
         string choiceStr;
         getline(cin, choiceStr);
 
-        // Check if input is a number
-        bool isValid = true;
+        // Check if input is numeric
+        bool isValid = !choiceStr.empty();
         for (char c : choiceStr) {
             if (!isdigit(c)) {
                 isValid = false;
@@ -232,31 +222,101 @@ void homePageMenu() {
             }
         }
 
-        if (!isValid || choiceStr.empty()) {
-            cout << "Invalid input! Please enter a number between 1 and 5.\n";
+        if (!isValid) {
+            cout << "Invalid input! Please enter a number between 1 and 3.\n";
             continue;
         }
 
-        int choice = stoi(choiceStr); // Safe because we've validated digits
+        int choice = stoi(choiceStr);
 
         switch (choice) {
-        case 1:
-            signUp("user");
-            break;
+        case 1: { // Log In Menu
+            bool condition = true;
+            while (condition) {
+                cout << "\n===== LOG IN MENU =====\n";
+                cout << "1. Log In (Staff)\n";
+                cout << "2. Log In (User)\n";
+                cout << "3. Back to Home\n";
+                cout << "Choose an option: ";
 
-        case 2:
-            signUp("staff");
-            break;
+                string loginChoiceStr;
+                getline(cin, loginChoiceStr);
+
+                bool loginValid = !loginChoiceStr.empty();
+                for (char c : loginChoiceStr) {
+                    if (!isdigit(c)) {
+                        loginValid = false;
+                        break;
+                    }
+                }
+
+                if (!loginValid) {
+                    cout << "Invalid input! Please enter a number between 1 and 3.\n";
+                    continue;
+                }
+
+                int loginChoice = stoi(loginChoiceStr);
+                switch (loginChoice) {
+                case 1:
+                    login("staff");
+                    break;
+                case 2:
+                    login("user");
+                    break;
+                case 3:
+                    condition = false;
+                    break;
+                default:
+                    cout << "Invalid choice! Please select 1-3.\n";
+                    break;
+                }
+            }
+        }
+
+        case 2: { // Sign Up Menu
+            bool condition = true;
+            while (condition) {
+                cout << "\n===== SIGN UP MENU =====\n";
+                cout << "1. Sign Up (Staff)\n";
+                cout << "2. Sign Up (User)\n";
+                cout << "3. Back to Home\n";
+                cout << "Choose an option: ";
+
+                string signUpChoiceStr;
+                getline(cin, signUpChoiceStr);
+
+                bool signUpValid = !signUpChoiceStr.empty();
+                for (char c : signUpChoiceStr) {
+                    if (!isdigit(c)) {
+                        signUpValid = false;
+                        break;
+                    }
+                }
+
+                if (!signUpValid) {
+                    cout << "Invalid input! Please enter a number between 1 and 3.\n";
+                    continue;
+                }
+
+                int signUpChoice = stoi(signUpChoiceStr);
+                switch (signUpChoice) {
+                case 1:
+                    signUp("staff");
+                    break;
+                case 2:
+                    signUp("user");
+                    break;
+                case 3:
+                    condition = false;
+                    break;
+                default:
+                    cout << "Invalid choice! Please select 1-3.\n";
+                    break;
+                }
+            }
+        }
 
         case 3:
-            login("user");
-            break;
-
-        case 4:
-            login("staff");
-            break;
-
-        case 5:
             cout << "Exiting program. Goodbye!\n";
             return;
 
@@ -275,7 +335,7 @@ void staffMainMenu(const string& username) {
         cout << "\n===== EVENT ORGANIZER STAFF MENU =====\n";
         cout << "Welcome, " << username << "!\n";
         cout << "1. Manage Event Staff\n";
-        cout << "2. View Events\n";
+        cout << "2. Event Menu\n";
         cout << "3. Crisis management\n";
         cout << "4. Logout\n";
         cout << "Choose an option: ";
@@ -295,7 +355,7 @@ void staffMainMenu(const string& username) {
             break;
         }
         case 2:
-            cout << "Viewing events\n";
+			eventMenu(username);
             break;
         case 3:
             crisisMenu();

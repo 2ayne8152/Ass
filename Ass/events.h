@@ -23,4 +23,4 @@ struct Event {
 	}
 };
 
-void eventMenu();
+void eventMenu(const string& username);

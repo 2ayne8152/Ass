@@ -70,5 +70,8 @@
     <ClInclude Include="stage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="login.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

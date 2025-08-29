@@ -1,8 +1,8 @@
 #include <iostream>
-#include "events.h"
+#include "login.h"
 
 using namespace std;
 int main() {
-	eventMenu();
+	homePageMenu();
 	return 0;
 }

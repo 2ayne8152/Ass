@@ -143,6 +143,7 @@
     <ClInclude Include="equipment.h" />
     <ClInclude Include="events.h" />
     <ClInclude Include="event_staff.h" />
+    <ClInclude Include="login.h" />
     <ClInclude Include="stage.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
