@@ -1,8 +1,9 @@
 #include <iostream>
 #include "login.h"
+#include "user.h"
 
 using namespace std;
 int main() {
-	homePageMenu();
+	userMainMenu("test");
 	return 0;
 }

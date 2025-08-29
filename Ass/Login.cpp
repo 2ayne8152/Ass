@@ -1,7 +1,7 @@
 #include "login.h"
+#include "user.h"
 
 void staffMainMenu(const string& username);
-void userMainMenu(const string& username);
 void stageMenu();
 void crisisMenu();
 
@@ -147,10 +147,6 @@ void signUp(const string& role) {
         }
         break;
     }
-}
-
-void userMainMenu(const string& username) {
-    cout << "hi user";
 }
 
 void login(const string& role) {

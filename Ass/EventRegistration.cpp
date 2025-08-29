@@ -10,7 +10,7 @@ using namespace std;
 void eventMenu(const string& username);
 void createEvent(vector<Event>& events, const string& username);
 void viewEvents(const vector<Event>& events, const string& username);
-void makePayment(vector<Event>& events);
+void makePayment(vector<Event>& events, const string& username);
 void saveEventsToFile(const vector<Event>& events);
 void loadEventsFromFile(vector<Event>& events);
 void inputCheck(int& input, double min, double max, string errormsg);
