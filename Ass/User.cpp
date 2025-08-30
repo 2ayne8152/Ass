@@ -1,68 +1,72 @@
-#include "user.h"
+#include <iostream>
+#include <vector>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
 #include "events.h"
+#include "user.h"
+#include "util.h"
+using namespace std;
 
-void viewEvents(const vector<Event>& events);
-void bookTickets(const string& username);
-void viewBookings(const string& username);
-void cancelBooking(const string& username);
+// Function declarations
+void viewAvailableEvents(const vector<Event>& events);
+void bookTickets(vector<Event>& events, vector<Ticket>& tickets, const string& username);
+void viewUserBookings(const vector<Ticket>& tickets, const string& username);
+void saveTicketsToFile(const vector<Ticket>& tickets);
+void loadTicketsFromFile(vector<Ticket>& tickets);
+void inputCheck(int& input, double min, double max, string errormsg);
 
-int generateTicketID() {
-    static int lastTicketID = 0;
-    return ++lastTicketID;
-}
+// File names
+const string EVENTS_FILE = "events.txt";
+const string TICKETS_FILE = "tickets.txt";
 
 void userMainMenu(const string& username) {
-    while (true) {
-        cout << "\n===== USER MAIN MENU =====\n";
-        cout << "1. View Events\n";
+    vector<Event> events;
+    vector<Ticket> tickets;
+
+    loadEventsFromFile(events);
+    loadTicketsFromFile(tickets);
+
+    bool condition = true;
+
+    do {
+        cout << "\n==== Ticket Booking Menu ====\n";
+        cout << "1. View Available Events\n";
         cout << "2. Book Tickets\n";
         cout << "3. View My Bookings\n";
-        cout << "4. Cancel Booking\n";
-        cout << "5. Logout\n";
-        cout << "Choose an option: ";
-        string choiceStr;
-        getline(cin, choiceStr);
-        bool isValid = !choiceStr.empty();
-        for (char c : choiceStr) {
-            if (!isdigit(c)) {
-                isValid = false;
-                break;
-            }
-        }
-        if (!isValid) {
-            cout << "Invalid input! Please enter a number between 1 and 5.\n";
-            continue;
-        }
-        int choice = stoi(choiceStr);
-        switch (choice) {
+        cout << "4. Quit\n";
+        cout << "Select an option: ";
+
+        int selection;
+        cin >> selection;
+        inputCheck(selection, 1, 4, "Invalid Input! Please Retry [1-4]: ");
+
+        switch (selection) {
         case 1:
-            viewEvents();
+            viewAvailableEvents(events);
             break;
         case 2:
-            bookTickets(username);
+            bookTickets(events, tickets, username);
+            saveEventsToFile(events);
+            saveTicketsToFile(tickets);
             break;
         case 3:
-            viewBookings(username);
+            viewUserBookings(tickets, username);
             break;
         case 4:
-            cancelBooking(username);
-            break;
-        case 5:
-            cout << "Logging out...\n";
+            condition = false;
             return;
-        default:
-            cout << "Invalid choice! Please select 1-5.\n";
-            break;
         }
-    }
+    } while (condition);
 }
 
-void viewEvents(const vector<Event>& events) {
+void viewAvailableEvents(const vector<Event>& events) {
     cout << "\n=== Available Events ===\n";
     bool hasEvents = false;
 
     for (const auto& e : events) {
-        if (e.status == "Upcoming") {
+        if (e.status == "Upcoming" && e.availableTickets > 0) {
             hasEvents = true;
             cout << "\nEvent ID: " << e.id
                 << "\nName: " << e.name
@@ -70,169 +74,149 @@ void viewEvents(const vector<Event>& events) {
                 << "\nDate: " << e.date
                 << "\nTime: " << e.startTime << " - " << e.endTime
                 << "\nOrganizer: " << e.organizerName
+                << "\nTicket Price: RM" << fixed << setprecision(2) << e.ticketPrice
+                << "\nAvailable Tickets: " << e.availableTickets
                 << "\n-----------------------------";
         }
     }
 
     if (!hasEvents) {
-        cout << "No events available\n";
+        cout << "No upcoming events with available tickets.\n";
     }
     cout << "\n";
 }
 
-void bookTickets(const string& username) {
-    int eventID, quantity;
-    cout << "Enter Event ID to book: ";
-    cin >> eventID;
-    cout << "Enter number of tickets: ";
-    cin >> quantity;
-    cin.ignore(); // clear newline
-    ifstream file("events.txt");
-    if (!file.is_open()) {
-        cout << "No events available.\n";
-        return;
-    }
-    string line;
-    bool eventFound = false;
-    string eventName;
-    double price;
-    int availableTickets;
-    while (getline(file, line)) {
-        stringstream ss(line);
-        int id;
-        string name, date, time, venue;
-        ss >> id >> name >> date >> time >> venue >> price >> availableTickets;
-        if (id == eventID) {
-            eventFound = true;
-            eventName = name;
-            break;
+void bookTickets(vector<Event>& events, vector<Ticket>& tickets, const string& username) {
+    cout << "\n=== Book Tickets ===\n";
+
+    vector<int> availableIndexes;
+    for (int i = 0; i < events.size(); i++) {
+        if (events[i].status == "Upcoming" && events[i].availableTickets > 0) {
+            availableIndexes.push_back(i);
+            cout << availableIndexes.size() << ". "
+                << events[i].name << " (ID: " << events[i].id << ") | Date: " << events[i].date
+                << " | Venue: " << events[i].venue
+                << " | Price: RM" << fixed << setprecision(2) << events[i].ticketPrice
+                << " | Tickets Left: " << events[i].availableTickets << "\n";
         }
     }
-    file.close();
-    if (!eventFound) {
-        cout << "Event not found.\n";
+
+    if (availableIndexes.empty()) {
+        cout << "No events available for booking.\n";
         return;
     }
-    if (quantity > availableTickets) {
-        cout << "Not enough tickets available.\n";
-        return;
+
+    int selection;
+    cout << "\nSelect the number of the event to book: ";
+    cin >> selection;
+
+    while (cin.fail() || selection < 1 || selection > availableIndexes.size()) {
+        cin.clear();
+        cin.ignore(100, '\n');
+        cout << "Invalid selection. Please try again: ";
+        cin >> selection;
     }
-    double totalPrice = price * quantity;
-    int ticketID = generateTicketID();
-    ofstream outFile("tickets.txt", ios::app);
-    if (!outFile.is_open()) {
-        cout << "Error booking tickets.\n";
-        return;
+
+    int index = availableIndexes[selection - 1];
+
+    int ticketsToBook;
+    cout << "Enter number of tickets to book: ";
+    cin >> ticketsToBook;
+    while (cin.fail() || ticketsToBook <= 0 || ticketsToBook > events[index].availableTickets) {
+        cin.clear();
+        cin.ignore(100, '\n');
+        cout << "Invalid number! Please enter a value between 1 and "
+            << events[index].availableTickets << ": ";
+        cin >> ticketsToBook;
     }
-    outFile << ticketID << " " << eventID << " " << username << " " << eventName << " " << quantity << " " << price << " " << totalPrice << " Booked\n";
-    outFile.close();
-    // Update available tickets in events.txt
-    ifstream inFile("events.txt");
-    ofstream tempFile("temp.txt");
-    while (getline(inFile, line)) {
-        stringstream ss(line);
-        int id, availTickets;
-        string name, date, time, venue;
-        double prc;
-        ss >> id >> name >> date >> time >> venue >> prc >> availTickets;
-        if (id == eventID) {
-            availTickets -= quantity;
-        }
-        tempFile << id << " " << name << " " << date << " " << time << " " << venue << " " << prc << " " << availTickets << "\n";
-    }
-    inFile.close();
-    tempFile.close();
-	remove("events.txt");
-    if (rename("temp.txt", "events.txt") != 0) {
-        perror("Error renaming temp.txt to events.txt");
-    }
-	cout << "Successfully booked " << quantity << " tickets for " << eventName << ". Total price: $" << totalPrice << "\n";
+
+    // Reduce available tickets
+    events[index].availableTickets -= ticketsToBook;
+
+    // Create Ticket
+    Ticket t;
+    t.ticketID = tickets.empty() ? 1 : tickets.back().ticketID + 1;
+    t.eventID = events[index].id;
+    t.username = username;
+    t.eventName = events[index].name;
+    t.quantity = ticketsToBook;
+    t.price = events[index].ticketPrice;
+    t.totalPrice = events[index].ticketPrice * ticketsToBook;
+    t.status = "Booked";
+
+    tickets.push_back(t);
+
+    cout << "\nBooking successful for event: " << events[index].name
+        << "\nTickets Booked: " << ticketsToBook
+        << "\nTotal Price: RM" << fixed << setprecision(2) << t.totalPrice
+        << "\n";
 }
 
-void viewBookings(const string& username) {
-    ifstream file("tickets.txt");
-    if (!file.is_open()) {
-        cout << "No bookings found.\n";
-        return;
-    }
-    string line;
-    cout << "\n===== MY BOOKINGS =====\n";
-    cout << "TicketID\tEventID\tEventName\tQuantity\tPrice\tTotalPrice\tStatus\n";
+void viewUserBookings(const vector<Ticket>& tickets, const string& username) {
+    cout << "\n=== My Bookings ===\n";
     bool hasBookings = false;
-    while (getline(file, line)) {
-        stringstream ss(line);
-        int ticketID, eventID, quantity;
-        string user, eventName, status;
-        double price, totalPrice;
-        ss >> ticketID >> eventID >> user >> eventName >> quantity >> price >> totalPrice >> status;
-        if (user == username) {
+
+    for (const auto& t : tickets) {
+        if (t.username == username) {
             hasBookings = true;
-            cout << ticketID << "\t" << eventID << "\t" << eventName << "\t" << quantity << "\t" << price << "\t" << totalPrice << "\t" << status << "\n";
+            cout << "\nTicket ID: " << t.ticketID
+                << "\nEvent Name: " << t.eventName
+                << "\nQuantity: " << t.quantity
+                << "\nPrice per Ticket: RM" << fixed << setprecision(2) << t.price
+                << "\nTotal Price: RM" << fixed << setprecision(2) << t.totalPrice
+                << "\nStatus: " << t.status
+                << "\n-----------------------------";
         }
     }
-    file.close();
+
     if (!hasBookings) {
-        cout << "No bookings found.\n";
+        cout << "You have no bookings yet.\n";
     }
+    cout << "\n";
 }
 
-void cancelBooking(const string& username) {
-    int ticketID;
-    cout << "Enter Ticket ID to cancel: ";
-    cin >> ticketID;
-    cin.ignore(); // clear newline
-    ifstream file("tickets.txt");
-    if (!file.is_open()) {
-        cout << "No bookings found.\n";
+void saveTicketsToFile(const vector<Ticket>& tickets) {
+    ofstream outFile(TICKETS_FILE);
+    if (!outFile) {
+        cout << "Error: Unable to save tickets.\n";
         return;
     }
-    string line;
-    vector<string> bookings;
-    bool bookingFound = false;
-    int eventID, quantity;
-    while (getline(file, line)) {
-        stringstream ss(line);
-        int tID, eID, qty;
-        string user, eventName, status;
-        double price, totalPrice;
-        ss >> tID >> eID >> user >> eventName >> qty >> price >> totalPrice >> status;
-        if (tID == ticketID && user == username && status == "Booked") {
-            bookingFound = true;
-            eventID = eID;
-            quantity = qty;
-            continue; // skip this booking to effectively delete it
-        }
-        bookings.push_back(line);
-    }
-    file.close();
-    if (!bookingFound) {
-        cout << "Booking not found or already cancelled.\n";
-        return;
-    }
-    ofstream outFile("tickets.txt");
-    for (const auto& b : bookings) {
-        outFile << b << "\n";
+
+    for (const auto& t : tickets) {
+        outFile << t.ticketID << "|"
+            << t.eventID << "|"
+            << t.username << "|"
+            << t.eventName << "|"
+            << t.quantity << "|"
+            << t.price << "|"
+            << t.totalPrice << "|"
+            << t.status << "\n";
     }
     outFile.close();
-    // Update available tickets in events.txt
-    ifstream inFile("events.txt");
-    ofstream tempFile("temp.txt");
+}
+
+void loadTicketsFromFile(vector<Ticket>& tickets) {
+    ifstream inFile(TICKETS_FILE);
+    if (!inFile) return;
+
+    string line;
     while (getline(inFile, line)) {
+        if (line.empty()) continue;
+
         stringstream ss(line);
-        int id, availTickets;
-        string name, date, time, venue;
-        double prc;
-        ss >> id >> name >> date >> time >> venue >> prc >> availTickets;
-        if (id == eventID) {
-            availTickets += quantity; // return tickets to availability
-        }
-        tempFile << id << " " << name << " " << date << " " << time << " " << venue << " " << prc << " " << availTickets << "\n";
+        Ticket t;
+        string token;
+
+        getline(ss, token, '|'); t.ticketID = stoi(token);
+        getline(ss, token, '|'); t.eventID = stoi(token);
+        getline(ss, t.username, '|');
+        getline(ss, t.eventName, '|');
+        getline(ss, token, '|'); t.quantity = stoi(token);
+        getline(ss, token, '|'); t.price = stod(token);
+        getline(ss, token, '|'); t.totalPrice = stod(token);
+        getline(ss, t.status, '|');
+
+        tickets.push_back(t);
     }
     inFile.close();
-    tempFile.close();
-    remove("events.txt");
-    if (rename("temp.txt", "events.txt") != 0) {
-        perror("Error renaming temp.txt to events.txt");
-    }
-    cout << "Successfully cancelled booking for Ticket ID: " << ticketID << "\n";
 }

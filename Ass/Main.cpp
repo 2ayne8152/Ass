@@ -4,6 +4,6 @@
 
 using namespace std;
 int main() {
-	userMainMenu("test");
+	homePageMenu();
 	return 0;
 }
