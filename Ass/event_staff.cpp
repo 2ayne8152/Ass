@@ -139,19 +139,42 @@ string generateNextStaffId(const vector<EventStaff>& staffList) {
 }
 
 void displayAllEventStaff(const vector<EventStaff>& staffList) {
-    cout << "\n===== ALL EVENT STAFF =====\n";
+    system("cls");
+    cout << endl;
+
+    string title = " ALL EVENT STAFF ";
+    int totalWidth = 95; 
+    int sideWidth = (totalWidth - title.size()) / 2;
+
+    cout << string(sideWidth, '=') << title << string(totalWidth - sideWidth - title.size(), '=') << endl;
+    cout << endl;
     if (staffList.empty()) {
         cout << "No event staff members found.\n";
         return;
     }
 
+    // Table header
+    cout << left
+        << setw(5) << "No."
+        << setw(10) << "ID"
+        << setw(20) << "Name"
+        << setw(15) << "Role"
+        << setw(15) << "Contact"
+        << setw(15) << "Event"
+        << setw(15) << "Shift" << endl;
+
+    cout << string(totalWidth, '-') << endl;
+
+    // Table rows
     for (size_t i = 0; i < staffList.size(); i++) {
-        cout << i + 1 << ". ID: " << staffList[i].staffId
-            << ", Name: " << staffList[i].name
-            << ", Role: " << staffList[i].role
-            << ", Contact: " << staffList[i].contactInfo
-            << ", Event: " << staffList[i].assignedEvent
-            << ", Shift: " << staffList[i].shiftTime << "\n";
+        cout << left
+            << setw(5) << (i + 1)
+            << setw(10) << staffList[i].staffId
+            << setw(20) << staffList[i].name
+            << setw(15) << staffList[i].role
+            << setw(15) << staffList[i].contactInfo
+            << setw(15) << staffList[i].assignedEvent
+            << setw(15) << staffList[i].shiftTime << endl;
     }
 }
 
