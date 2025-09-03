@@ -8,6 +8,17 @@
 #include <iomanip>
 using namespace std;
 
+void printMainMenuBanner() {
+    cout << R"(
+      ██╗ █████╗ ███╗   ███╗    ██████╗  ██╗      █████╗ ███╗   ██╗
+      ██║██╔══██╗████╗ ████║    ██╔══██╗ ██║     ██╔══██╗████╗  ██║
+      ██║███████║██╔████╔██║    ██████╔╝ ██║     ███████║██╔██╗ ██║
+ ██   ██║██╔══██║██║╚██╔╝██║    ██╔═══╝  ██║     ██╔══██║██║╚██╗██║
+ ╚█████╔╝██║  ██║██║ ╚═╝ ██║    ██║      ███████╗██║  ██║██║ ╚████║
+  ╚════╝ ╚═╝  ╚═╝╚═╝     ╚═╝    ╚═╝      ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝
+    )" << endl;
+}
+
 bool isValidContact(const string& contact) {
     regex pattern(R"(\d{3}-\d{7})"); // exactly 3 digits, dash, 7 digits
     return regex_match(contact, pattern);
@@ -17,6 +28,16 @@ bool validateShiftFormat(const string& shiftTime) {
     regex pattern("^([01]?[0-9]|2[0-3]):([0-5][0-9])->([01]?[0-9]|2[0-3]):([0-5][0-9])$");
     return regex_match(shiftTime, pattern);
 }
+
+bool isValidEventName(const string& event) {
+    return event.length() > 3 && event.length() <= 15;
+}
+
+string fitToWidth(const string& text, size_t width) {
+    if (text.size() <= width) return text;
+    return text.substr(0, width - 3) + "..."; // add "..." if too long
+}
+
 
 vector<EventStaff> loadEventStaff() {
     vector<EventStaff> staffList;
@@ -153,7 +174,6 @@ void displayAllEventStaff(const vector<EventStaff>& staffList) {
         return;
     }
 
-    // Table header
     cout << left
         << setw(5) << "No."
         << setw(10) << "ID"
@@ -165,16 +185,16 @@ void displayAllEventStaff(const vector<EventStaff>& staffList) {
 
     cout << string(totalWidth, '-') << endl;
 
-    // Table rows
     for (size_t i = 0; i < staffList.size(); i++) {
         cout << left
             << setw(5) << (i + 1)
             << setw(10) << staffList[i].staffId
-            << setw(20) << staffList[i].name
-            << setw(15) << staffList[i].role
+            << setw(20) << fitToWidth(staffList[i].name, 20)
+            << setw(15) << fitToWidth(staffList[i].role, 15)
             << setw(15) << staffList[i].contactInfo
             << setw(15) << staffList[i].assignedEvent
-            << setw(15) << staffList[i].shiftTime << endl;
+            << setw(15) << staffList[i].shiftTime
+            << endl;
     }
 }
 
@@ -232,9 +252,21 @@ void addEventStaffFromInput(vector<EventStaff>& staffList) {
         break; 
     }
 
-    cout << "Enter Assigned Event: ";
-    getline(cin, event);
+    while (true) {
+        cout << "Enter Assigned Event: ";
+        getline(cin, event);
 
+        if (event == "exit") {
+            cout << "Cancelled.\n";
+            return;
+        }
+
+        if (!isValidEventName(event)) {
+            cout << "Invalid event name. Must be more than 3 and no more than 15 characters.\n";
+            continue;
+        }
+        break;
+    }
     while (true) {
         cout << "Enter Shift Time (Format: HH:MM->HH:MM, e.g., 09:00->17:30): ";
         getline(cin, shift);
