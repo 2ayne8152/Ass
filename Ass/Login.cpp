@@ -1,5 +1,6 @@
 #include "login.h"
 #include "user.h"
+#include "report.h"
 
 void staffMainMenu(const string& username);
 void stageMenu();
@@ -340,8 +341,9 @@ void staffMainMenu(const string& username) {
         cout << "Welcome, " << username << "!\n";
         cout << "1. Manage Event Staff\n";
         cout << "2. Event Menu\n";
-        cout << "3. Crisis management\n";
-        cout << "4. Logout\n";
+        cout << "3. Crisis Management\n";
+        cout << "4. Reports\n";
+        cout << "5. Logout\n";
         cout << "Choose an option: ";
 
         getline(cin, input);
@@ -359,12 +361,15 @@ void staffMainMenu(const string& username) {
             break;
         }
         case 2:
-			eventMenu(username);
+            eventMenu(username);
             break;
         case 3:
             crisisMenu();
             break;
         case 4:
+            reportMenu();  
+            break;
+        case 5:
             cout << "Logging out...\n";
             return;
         default:
@@ -372,3 +377,4 @@ void staffMainMenu(const string& username) {
         }
     }
 }
+
