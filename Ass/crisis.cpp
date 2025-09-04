@@ -26,14 +26,14 @@ void loadStagesFromFile() {
             }
 
             stringstream ss(line);
-            string stageNum, stageName, capacity, operational, currentEvent, pricePerHourStr;
+            string stageNum, stageName, capacity, operational, currentEvent, pricePerDayStr;
 
             if (!getline(ss, stageNum, ',') ||
                 !getline(ss, stageName, ',') ||
                 !getline(ss, capacity, ',') ||
                 !getline(ss, operational, ',') ||
                 !getline(ss, currentEvent, ',') ||
-                !getline(ss, pricePerHourStr)) {
+                !getline(ss, pricePerDayStr)) {
 
                 cerr << "Warning: Invalid format on line " << lineNumber << ": " << line << endl;
                 continue;
@@ -49,7 +49,7 @@ void loadStagesFromFile() {
             trim(capacity);
             trim(operational);
             trim(currentEvent);
-            trim(pricePerHourStr);
+            trim(pricePerDayStr);
 
             Stage stage;
             stage.stageNumber = stageNum;
@@ -78,11 +78,11 @@ void loadStagesFromFile() {
             }
 
             try {
-                stage.pricePerHour = pricePerHourStr.empty() ? 0.0 : stod(pricePerHourStr);
+                stage.pricePerDay = pricePerDayStr.empty() ? 0.0 : stod(pricePerDayStr);
             }
             catch (...) {
-                stage.pricePerHour = 0.0;
-                cerr << "Warning: Invalid pricePerHour on line " << lineNumber << endl;
+                stage.pricePerDay = 0.0;
+                cerr << "Warning: Invalid pricePerDay on line " << lineNumber << endl;
             }
 
             stages.push_back(stage);
@@ -101,7 +101,7 @@ void saveStagesToFile() {
             file << stage.stageNumber << ", " << stage.stageName << ", " << stage.capacity << ", "
                 << (stage.isOperational ? "true" : "false") << ", "
                 << (stage.currentEvent.empty() ? "\"\"" : stage.currentEvent) << ", "
-                << fixed << setprecision(2) << stage.pricePerHour << endl;
+                << fixed << setprecision(2) << stage.pricePerDay << endl;
         }
         file.close();
     }
@@ -129,7 +129,7 @@ void displayAllStages() {
         << setw(8) << "Capacity"
         << setw(12) << "Status"
         << setw(15) << "Current Event"
-        << setw(15) << "Price/Hour" << endl;
+        << setw(15) << "Price/Day" << endl;
 
     cout << string(totalWidth, '-') << endl;
 
@@ -141,7 +141,7 @@ void displayAllStages() {
             << setw(8) << stages[i].capacity
             << setw(12) << (stages[i].isOperational ? "Operational" : "BROKEN")
             << setw(15) << (stages[i].currentEvent.empty() ? "Available" : stages[i].currentEvent)
-            << setw(15) << fixed << setprecision(2) << stages[i].pricePerHour
+            << setw(15) << fixed << setprecision(2) << stages[i].pricePerDay
             << endl;
     }
 }
