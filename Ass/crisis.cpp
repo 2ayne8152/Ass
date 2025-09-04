@@ -106,6 +106,7 @@ void saveStagesToFile() {
         file.close();
     }
 }
+
 void displayAllStages() {
     system("cls");
     cout << endl;
@@ -280,13 +281,13 @@ void crisisMenu() {
 
         switch (choice) {
         case 1:
-            stageMenu(); 
+            stageMenu();
             break;
         case 2:
             equipmentMenu();
             break;
         case 3:
-            return; 
+            return;
         default:
             cout << "Invalid choice!\n";
         }
