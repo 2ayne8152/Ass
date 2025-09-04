@@ -68,6 +68,9 @@
     <Text Include="organizers.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="tickets.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="equipment.h">

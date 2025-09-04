@@ -6,24 +6,29 @@
 #include <regex>
 #include "events.h"
 #include "util.h"
+#include "stage.h"
 #include <iomanip>
 using namespace std;
 
 void eventMenu(const string& username);
-void createEvent(vector<Event>& events, const string& username);
+void createEvent(vector<Event>& events, const vector<Stage>& stages, const string& username);
 void viewEvents(const vector<Event>& events, const string& username);
 void makePayment(vector<Event>& events, const string& username);
 void saveEventsToFile(const vector<Event>& events);
 void inputCheck(int& input, double min, double max, string errormsg);
-void editEvents(vector<Event>& events);
+void editEvents(vector<Event>& events, const string& username);
 bool isValidTime(const string& time);
 bool isValidDate(const string& date);
+void loadStagesFromFile(vector<Stage>& stages);
 
-const string FILE_NAME = "events.txt";
+const string EVENTS_FILE = "events.txt";
+const string STAGES_FILE = "stages.txt";
 
 void eventMenu(const string& username) {
 	vector<Event> events;
+	vector<Stage> stages;
 	loadEventsFromFile(events);
+	loadStagesFromFile(stages);
 	bool condition = true;
 
 	do {
@@ -41,7 +46,7 @@ void eventMenu(const string& username) {
 
 		switch (selection) {
 			case 1: {
-				createEvent(events, username);
+				createEvent(events, stages, username);
 				saveEventsToFile(events);
 				break;
 			}
@@ -50,7 +55,7 @@ void eventMenu(const string& username) {
 				break;
 			}
 			case 3: {
-				editEvents(events);
+				editEvents(events, username);
 				saveEventsToFile(events);
 				break;
 			}	  
@@ -66,10 +71,10 @@ void eventMenu(const string& username) {
 	} while (condition);
 }
 
-void createEvent(vector<Event>& events, const string& username) {
+void createEvent(vector<Event>& events, const vector<Stage>& stages, const string& username) {
 	cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear leftover input
 
-	string name, venue, date, startTime, endTime;
+	string name, date, startTime, endTime;
 	double ticketPrice;
 	int availableTickets;
 	int id = events.size() + 1;
@@ -83,12 +88,39 @@ void createEvent(vector<Event>& events, const string& username) {
 		if (name.empty()) cout << "Event name cannot be empty!\n";
 	} while (name.empty());
 
-	// Input Venue
+	// Choose Venue from Available Stages
+	if (stages.empty()) {
+		cout << " No stages available. Please add stages first!\n";
+		return;
+	}
+
+	cout << "\n=== Available Stages ===\n";
+	for (size_t i = 0; i < stages.size(); ++i) {
+		cout << i + 1 << ". " << stages[i].stageName
+			<< " (Capacity: " << stages[i].capacity
+			<< ", Status: " << (stages[i].isOperational ? "Operational" : "Not Operational") << ")\n";
+	}
+
+	int stageChoice;
 	do {
-		cout << "Enter Venue: ";
-		getline(cin, venue);
-		if (venue.empty()) cout << "Venue cannot be empty!\n";
-	} while (venue.empty());
+		cout << "Select a stage by number: ";
+		cin >> stageChoice;
+
+		if (cin.fail() || stageChoice < 1 || stageChoice >(int)stages.size()) {
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			cout << "Invalid selection! Please choose a valid stage.\n";
+		}
+		else if (!stages[stageChoice - 1].isOperational) {
+			cout << " This stage is not operational. Please select another one.\n";
+			stageChoice = -1;
+		}
+	} while (stageChoice < 1 || stageChoice >(int)stages.size());
+
+	string venue = stages[stageChoice - 1].stageName;
+	availableTickets = stages[stageChoice - 1].capacity;
+
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
 	// Input Date
 	do {
@@ -135,17 +167,6 @@ void createEvent(vector<Event>& events, const string& username) {
 		}
 	} while (ticketPrice <= 0);
 
-	// Input Available Tickets
-	do {
-		cout << "Enter Available Tickets: ";
-		cin >> availableTickets;
-		if (cin.fail() || availableTickets <= 0) {
-			cin.clear();
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-			cout << "Invalid input! Please enter a positive number.\n";
-		}
-	} while (availableTickets <= 0);
-
 	// Save Event
 	events.emplace_back(
 		id,
@@ -160,9 +181,9 @@ void createEvent(vector<Event>& events, const string& username) {
 		availableTickets
 	);
 
-	cout << "\nEvent created successfully!\n";
+	cout << "\n Event created successfully!\n";
+	cout << "   Venue: " << venue << " | Tickets Available: " << availableTickets << "\n";
 }
-
 
 void viewEvents(const vector<Event>& events, const string& username) {
 	cout << "\n=== Your Booking History ===\n";
@@ -234,18 +255,20 @@ void makePayment(vector<Event>& events, const string& username) {
 	cout << "\nPayment successful for event: " << events[index].name << "\n";
 }
 
-void editEvents(vector<Event>& events) {
+void editEvents(vector<Event>& events, const string& username) {
 	vector<int> editableIds;
-	cout << "\n=== Editable Events (Upcoming) ===\n";
+
+	cout << "\n=== Your Upcoming Events ===\n";
 	for (const auto& e : events) {
-		if (e.status == "Upcoming") {
+		if (e.status == "Upcoming" && e.organizerName == username) {
 			editableIds.push_back(e.id);
-			cout << "ID: " << e.id << " | " << e.name << " | " << e.date << " | " << e.status << " | Ticket Price: RM" << e.ticketPrice << "\n";
+			cout << "ID: " << e.id << " | " << e.name << " | " << e.date
+				<< " | " << e.status << " | Ticket Price: RM" << e.ticketPrice << "\n";
 		}
 	}
 
 	if (editableIds.empty()) {
-		cout << "\nNo events to edit.\n";
+		cout << "\nNo upcoming events available to edit for your account.\n";
 		return;
 	}
 
@@ -254,12 +277,12 @@ void editEvents(vector<Event>& events) {
 	cin >> id;
 	inputCheck(id, 1, events.size(), "Invalid Event ID. Please try again: ");
 
-	auto it = find_if(events.begin(), events.end(), [id](const Event& e) {
-		return e.id == id && e.status == "Upcoming";
+	auto it = find_if(events.begin(), events.end(), [id, &username](const Event& e) {
+		return e.id == id && e.status == "Upcoming" && e.organizerName == username;
 		});
 
 	if (it == events.end()) {
-		cout << "Event ID not editable or does not exist.\n";
+		cout << "You cannot edit this event. It may belong to another user or is not upcoming.\n";
 		return;
 	}
 
@@ -276,7 +299,7 @@ void editEvents(vector<Event>& events) {
 		cout << "5. Edit End Time\n";
 		cout << "6. Edit Status\n";
 		cout << "7. Quit\n";
-		cout << "8. Edit Ticket Price\n"; // <-- added new option
+		cout << "8. Edit Ticket Price\n";
 		cout << "Select an option: ";
 
 		int selection;
@@ -347,7 +370,7 @@ void editEvents(vector<Event>& events) {
 }
 
 void saveEventsToFile(const vector<Event>& events) {
-	ofstream outFile(FILE_NAME);
+	ofstream outFile(EVENTS_FILE);
 	if (!outFile) {
 		cout << "Error: Unable to save events.\n";
 		return;
@@ -371,8 +394,8 @@ void saveEventsToFile(const vector<Event>& events) {
 }
 
 void loadEventsFromFile(vector<Event>& events) {
-	ifstream inFile(FILE_NAME);
-	if (!inFile) return; // No file yet, skip loading
+	ifstream inFile(EVENTS_FILE);
+	if (!inFile) return; 
 
 	events.clear();
 	string line;
@@ -435,4 +458,61 @@ bool isValidDate(const string& date) {
 bool isValidTime(const string& time) {
 	regex timePattern(R"(^([01]\d|2[0-3]):([0-5]\d)$)");
 	return regex_match(time, timePattern);
+}
+
+void loadStagesFromFile(vector<Stage>& stages) {
+	ifstream inFile(STAGES_FILE);
+	if (!inFile) {
+		cout << "Warning: No stages file found. Starting with an empty list.\n";
+		return;
+	}
+
+	stages.clear();
+	string line;
+
+	while (getline(inFile, line)) {
+		if (line.empty()) continue;
+
+		stringstream ss(line);
+		Stage s;
+		string token;
+
+		// Stage Number
+		getline(ss, s.stageNumber, ',');
+		s.stageNumber.erase(0, s.stageNumber.find_first_not_of(" \t"));
+		s.stageNumber.erase(s.stageNumber.find_last_not_of(" \t") + 1);
+
+		// Stage Name
+		getline(ss, s.stageName, ',');
+		s.stageName.erase(0, s.stageName.find_first_not_of(" \t"));
+		s.stageName.erase(s.stageName.find_last_not_of(" \t") + 1);
+
+		// Capacity
+		getline(ss, token, ',');
+		token.erase(0, token.find_first_not_of(" \t"));
+		token.erase(token.find_last_not_of(" \t") + 1);
+		s.capacity = stoi(token);
+
+		// Is Operational (true/false)
+		getline(ss, token, ',');
+		token.erase(0, token.find_first_not_of(" \t"));
+		token.erase(token.find_last_not_of(" \t") + 1);
+		for (auto& c : token) c = tolower(c);
+		s.isOperational = (token == "true" || token == "1" || token == "yes");
+
+		// Current Event
+		getline(ss, s.currentEvent, ',');
+		s.currentEvent.erase(0, s.currentEvent.find_first_not_of(" \t\""));
+		s.currentEvent.erase(s.currentEvent.find_last_not_of(" \t\"") + 1);
+
+		// Price Per Day
+		getline(ss, token, ',');
+		token.erase(0, token.find_first_not_of(" \t"));
+		token.erase(token.find_last_not_of(" \t") + 1);
+		s.pricePerDay = stod(token);
+
+		stages.push_back(s);
+	}
+
+	inFile.close();
 }

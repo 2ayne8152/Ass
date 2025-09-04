@@ -106,6 +106,7 @@ void saveStagesToFile() {
         file.close();
     }
 }
+
 void displayAllStages() {
     system("cls");
     cout << endl;
