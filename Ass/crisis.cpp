@@ -21,27 +21,24 @@ void loadStagesFromFile() {
         while (getline(file, line)) {
             lineNumber++;
 
-            // Skip empty lines
             if (line.empty() || line.find_first_not_of(" \t\n\r") == string::npos) {
                 continue;
             }
 
             stringstream ss(line);
-            string stageNum, stageName, capacity, operational, currentEvent;
+            string stageNum, stageName, capacity, operational, currentEvent, pricePerHourStr;
 
-            // Check if we have enough fields
             if (!getline(ss, stageNum, ',') ||
                 !getline(ss, stageName, ',') ||
                 !getline(ss, capacity, ',') ||
-                !getline(ss, operational, ',')) {
+                !getline(ss, operational, ',') ||
+                !getline(ss, currentEvent, ',') ||
+                !getline(ss, pricePerHourStr)) {
 
                 cerr << "Warning: Invalid format on line " << lineNumber << ": " << line << endl;
                 continue;
             }
 
-            getline(ss, currentEvent);  // The rest is current event
-
-            // Trim whitespace
             auto trim = [](string& s) {
                 s.erase(0, s.find_first_not_of(" \t\n\r"));
                 s.erase(s.find_last_not_of(" \t\n\r") + 1);
@@ -52,13 +49,12 @@ void loadStagesFromFile() {
             trim(capacity);
             trim(operational);
             trim(currentEvent);
+            trim(pricePerHourStr);
 
-            // Create stage with error handling
             Stage stage;
             stage.stageNumber = stageNum;
             stage.stageName = stageName;
 
-            // Safe capacity conversion
             try {
                 stage.capacity = capacity.empty() ? 0 : stoi(capacity);
             }
@@ -69,18 +65,24 @@ void loadStagesFromFile() {
 
             stage.isOperational = (operational == "true" || operational == "1");
 
-            // Handle current event
             if (currentEvent.empty() || currentEvent == "\"\"" || currentEvent == "\"\"") {
                 stage.currentEvent = "";
             }
             else {
-                // Remove surrounding quotes if present
                 if (currentEvent.front() == '"' && currentEvent.back() == '"') {
                     stage.currentEvent = currentEvent.substr(1, currentEvent.length() - 2);
                 }
                 else {
                     stage.currentEvent = currentEvent;
                 }
+            }
+
+            try {
+                stage.pricePerHour = pricePerHourStr.empty() ? 0.0 : stod(pricePerHourStr);
+            }
+            catch (...) {
+                stage.pricePerHour = 0.0;
+                cerr << "Warning: Invalid pricePerHour on line " << lineNumber << endl;
             }
 
             stages.push_back(stage);
@@ -96,24 +98,51 @@ void saveStagesToFile() {
     ofstream file("stages.txt");
     if (file.is_open()) {
         for (const auto& stage : stages) {
-            file << stage.stageNumber << ", " << stage.stageName << ", "  << stage.capacity << ", "
-                << (stage.isOperational ? "true" : "false") << ", "  << (stage.currentEvent.empty() ? "\"\"" : stage.currentEvent) << endl;
+            file << stage.stageNumber << ", " << stage.stageName << ", " << stage.capacity << ", "
+                << (stage.isOperational ? "true" : "false") << ", "
+                << (stage.currentEvent.empty() ? "\"\"" : stage.currentEvent) << ", "
+                << fixed << setprecision(2) << stage.pricePerHour << endl;
         }
         file.close();
     }
 }
-
 void displayAllStages() {
-    cout << "\n===== VENUE STAGES =====\n";
-    cout << "ID   Stage Name          Capacity  Status      Current Event\n";
-    cout << "------------------------------------------------------------\n";
+    system("cls");
+    cout << endl;
 
-    for (const auto& stage : stages) {
-        cout << setw(3) << left << stage.stageNumber << " "
-            << setw(18) << left << stage.stageName << " "
-            << setw(8) << stage.capacity << " "
-            << setw(10) << (stage.isOperational ? "Operational" : "BROKEN") << " "
-            << (stage.currentEvent.empty() ? "Available" : stage.currentEvent) << endl;
+    string title = " ALL VENUE STAGES ";
+    int totalWidth = 85;
+    int sideWidth = (totalWidth - title.size()) / 2;
+
+    cout << string(sideWidth, '=') << title << string(totalWidth - sideWidth - title.size(), '=') << endl;
+    cout << endl;
+
+    if (stages.empty()) {
+        cout << "No stages found.\n";
+        return;
+    }
+
+    cout << left
+        << setw(5) << "No."
+        << setw(8) << "ID"
+        << setw(18) << "Stage Name"
+        << setw(8) << "Capacity"
+        << setw(12) << "Status"
+        << setw(15) << "Current Event"
+        << setw(15) << "Price/Hour" << endl;
+
+    cout << string(totalWidth, '-') << endl;
+
+    for (size_t i = 0; i < stages.size(); i++) {
+        cout << left
+            << setw(5) << (i + 1)
+            << setw(8) << stages[i].stageNumber
+            << setw(18) << stages[i].stageName
+            << setw(8) << stages[i].capacity
+            << setw(12) << (stages[i].isOperational ? "Operational" : "BROKEN")
+            << setw(15) << (stages[i].currentEvent.empty() ? "Available" : stages[i].currentEvent)
+            << setw(15) << fixed << setprecision(2) << stages[i].pricePerHour
+            << endl;
     }
 }
 
