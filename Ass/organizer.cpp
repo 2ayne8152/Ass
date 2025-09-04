@@ -3,6 +3,9 @@
 #include <sstream>
 using namespace std;
 
+
+void eventMenu(const string& username);
+
 void organizerMainMenu(const string& username) {
     int choice;
     string input;
@@ -25,11 +28,9 @@ void organizerMainMenu(const string& username) {
 
         switch (choice) {
         case 1:
-            // TODO: Add event management for organizers
-            cout << "Event management not implemented yet.\n";
+            eventMenu(username); 
             break;
         case 2:
-            // TODO: Add report viewing for organizers
             cout << "Report viewing not implemented yet.\n";
             break;
         case 3:

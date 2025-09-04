@@ -372,10 +372,9 @@ void staffMainMenu(const string& username) {
         cout << "\n===== EVENT ORGANIZER STAFF MENU =====\n";
         cout << "Welcome, " << username << "!\n\n";
         cout << "1. Manage Event Staff\n";
-        cout << "2. Event Menu\n";
-        cout << "3. Crisis Management\n";
-        cout << "4. Reports\n";
-        cout << "5. Logout\n";
+        cout << "2. Crisis Management\n";
+        cout << "3. Reports\n";
+        cout << "4. Logout\n";
         cout << "Choose an option: ";
 
         getline(cin, input);
@@ -393,15 +392,12 @@ void staffMainMenu(const string& username) {
             break;
         }
         case 2:
-            eventMenu(username);
-            break;
-        case 3:
             crisisMenu();
             break;
-        case 4:
+        case 3:
             reportMenu();
             break;
-        case 5:
+        case 4:
             cout << "Logging out...\n";
             return;
         default:
