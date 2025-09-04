@@ -9,15 +9,14 @@
 #include "util.h"
 using namespace std;
 
-// Function declarations
 void viewAvailableEvents(const vector<Event>& events);
 void bookTickets(vector<Event>& events, vector<Ticket>& tickets, const string& username);
 void viewUserBookings(const vector<Ticket>& tickets, const string& username);
 void saveTicketsToFile(const vector<Ticket>& tickets);
 void loadTicketsFromFile(vector<Ticket>& tickets);
 void inputCheck(int& input, double min, double max, string errormsg);
+void makePayment(vector<Event>& events, vector<Ticket>& tickets, const string& username);
 
-// File names
 const string EVENTS_FILE = "events.txt";
 const string TICKETS_FILE = "tickets.txt";
 
@@ -35,12 +34,13 @@ void userMainMenu(const string& username) {
         cout << "1. View Available Events\n";
         cout << "2. Book Tickets\n";
         cout << "3. View My Bookings\n";
-        cout << "4. Quit\n";
+        cout << "4. Make Payment\n";
+        cout << "5. Quit\n";
         cout << "Select an option: ";
 
         int selection;
         cin >> selection;
-        inputCheck(selection, 1, 4, "Invalid Input! Please Retry [1-4]: ");
+        inputCheck(selection, 1, 5, "Invalid Input! Please Retry [1-5]: ");
 
         switch (selection) {
         case 1:
@@ -55,6 +55,11 @@ void userMainMenu(const string& username) {
             viewUserBookings(tickets, username);
             break;
         case 4:
+            makePayment(events, tickets, username);
+            saveEventsToFile(events);
+            saveTicketsToFile(tickets);
+            break;
+        case 5:
             condition = false;
             return;
         }
@@ -84,6 +89,67 @@ void viewAvailableEvents(const vector<Event>& events) {
         cout << "No upcoming events with available tickets.\n";
     }
     cout << "\n";
+}
+
+void makePayment(vector<Event>& events, vector<Ticket>& tickets, const string& username) {
+    cout << "\n=== Make Payment ===\n";
+    vector<int> unpaidIndexes;
+
+    // Show unpaid tickets
+    for (int i = 0; i < tickets.size(); i++) {
+        if (tickets[i].username == username && tickets[i].status == "Booked") {
+            unpaidIndexes.push_back(i);
+            cout << unpaidIndexes.size() << ". Ticket ID: " << tickets[i].ticketID
+                << " | Event: " << tickets[i].eventName
+                << " | Qty: " << tickets[i].quantity
+                << " | Total: RM" << fixed << setprecision(2) << tickets[i].totalPrice
+                << " | Status: " << tickets[i].status << "\n";
+        }
+    }
+
+    if (unpaidIndexes.empty()) {
+        cout << "You have no unpaid bookings.\n";
+        return;
+    }
+
+    // Ask user to choose which ticket to pay for
+    int selection;
+    cout << "\nSelect the ticket number to make payment: ";
+    cin >> selection;
+
+    while (cin.fail() || selection < 1 || selection > unpaidIndexes.size()) {
+        cin.clear();
+        cin.ignore(100, '\n');
+        cout << "Invalid selection. Please try again: ";
+        cin >> selection;
+    }
+
+    int ticketIndex = unpaidIndexes[selection - 1];
+
+    cout << "\nProcessing payment for Ticket ID: " << tickets[ticketIndex].ticketID << "...\n";
+    cout << "Amount to pay: RM" << fixed << setprecision(2) << tickets[ticketIndex].totalPrice << "\n";
+
+    // Simulate payment confirmation
+    char confirm;
+    cout << "Confirm payment? (Y/N): ";
+    cin >> confirm;
+
+    if (confirm == 'Y' || confirm == 'y') {
+        tickets[ticketIndex].status = "Paid";
+
+        // Update the event's payment status if fully paid
+        for (auto& e : events) {
+            if (e.id == tickets[ticketIndex].eventID) {
+                e.paymentStatus = "Paid";
+                break;
+            }
+        }
+
+        cout << "Payment successful! Ticket ID: " << tickets[ticketIndex].ticketID << " is now marked as PAID.\n";
+    }
+    else {
+        cout << "Payment cancelled.\n";
+    }
 }
 
 void bookTickets(vector<Event>& events, vector<Ticket>& tickets, const string& username) {

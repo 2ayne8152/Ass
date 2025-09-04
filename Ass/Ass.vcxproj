@@ -139,6 +139,7 @@
     <Text Include="last_staff_id.txt" />
     <Text Include="staff.txt" />
     <Text Include="stages.txt" />
+    <Text Include="tickets.txt" />
     <Text Include="users.txt" />
   </ItemGroup>
   <ItemGroup>
