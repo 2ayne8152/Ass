@@ -102,10 +102,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Program Files\OpenSSL-Win64\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Program Files\OpenSSL-Win64\lib\VC\x64\MDd</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libcrypto.lib;libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -124,6 +127,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="crisis.cpp" />
+    <ClCompile Include="Encryption.cpp" />
     <ClCompile Include="equipment.cpp" />
     <ClCompile Include="event_staff.cpp" />
     <ClCompile Include="Login.cpp" />
@@ -145,6 +149,7 @@
     <Text Include="users.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="encryption.h" />
     <ClInclude Include="equipment.h" />
     <ClInclude Include="events.h" />
     <ClInclude Include="event_staff.h" />

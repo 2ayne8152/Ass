@@ -1,7 +1,8 @@
 #include "login.h"
 #include "user.h"
 #include "report.h"
-
+#include "encryption.h"
+#include <conio.h>  
 
 void staffMainMenu(const string& username);
 void organizerMainMenu(const string& username);
@@ -71,20 +72,46 @@ string getInput(const string& prompt) {
     return input;
 }
 
+string getHiddenInput(const string& prompt) {
+    cout << prompt;
+    string password;
+    char ch;
+
+    while (true) {
+        ch = _getch();
+
+        if (ch == 13) { // Enter key
+            cout << endl;
+            break;
+        }
+        else if (ch == 8) { // Backspace
+            if (!password.empty()) {
+                password.pop_back();
+                cout << "\b \b"; // erase last '*'
+            }
+        }
+        else {
+            password.push_back(ch);
+            cout << '*'; // mask with '*'
+        }
+    }
+
+    return password;
+}
+
 void signUp(const string& role) {
-    string username, email, password;
+    string username, email, password, confirmPassword;
 
-    cout << "\n===== " << (role == "staff" ? "STAFF" : role == "organizer" ? "ORGANIZER" : "USER") << " SIGN UP =====" << endl;
-    cout << "(Type 'exit' at any time to cancel)\n";
+    cout << "\n===== " << (role == "staff" ? "STAFF" : "USER") << " SIGN UP =====" << endl;
+    cout << "(Type '0' at any time to cancel)\n";
 
-    // staff check passkey
+    // Staff passkey check
     if (role == "staff") {
         string passkey;
         while (true) {
-            cout << "Enter staff passkey: ";
-            getline(cin, passkey);
+            passkey = getHiddenInput("Enter staff passkey: ");
 
-            if (passkey == "exit") {
+            if (passkey == "0") {
                 cout << "Sign up cancelled.\n";
                 return;
             }
@@ -101,78 +128,88 @@ void signUp(const string& role) {
 
     while (true) {
         username = getInput("Enter username: ");
-        if (username == "exit") {
-            cout << "Sign up cancelled.\n";
+        if (username == "0")
             return;
-        }
+
         if (!isValidUsername(username)) {
             cout << "Invalid username. Must be at least 3 characters (letters, numbers, underscore).\n";
-            continue;
+            continue; 
         }
-
-        while (true) {
-            email = getInput("Enter email: ");
-            if (email == "exit") {
-                cout << "Sign up cancelled.\n";
-                return;
-            }
-            if (!isValidEmail(email)) {
-                cout << "Invalid email format.\n";
-                continue;
-            }
-            break;
-        }
-
-        while (true) {
-            password = getInput("Enter password: ");
-            if (password == "exit") {
-                cout << "Sign up cancelled.\n";
-                return;
-            }
-            if (!isValidPassword(password)) {
-                cout << "Invalid password. Must be at least 6 characters, include a letter and a number.\n";
-                continue;
-            }
-            break;
-        }
-
-        if (isDuplicate(username, email, role)) {
-            cout << "Username or email already exists. Try again.\n";
-            continue;
-        }
-
-        string filename;
-        if (role == "staff") filename = "staff.txt";
-        else if (role == "user") filename = "users.txt";
-        else if (role == "organizer") filename = "organizers.txt";
-
-        ofstream file(filename, ios::app);
-        if (file.is_open()) {
-            file << username << " " << email << " " << password << endl;
-            file.close();
-            cout << (role == "staff" ? "Staff" : role == "organizer" ? "Organizer" : "User") << " sign up successful!" << ".\n";
-        }
-        else {
-            cout << "Error: Could not open file.\n";
-        }
-        break;
+        break; 
     }
+    
+    while (true) {
+        email = getInput("Enter email: ");
+        if (email == "0") 
+            return;
+
+        if (!isValidEmail(email)) {
+            cout << "Invalid email format.\n";
+            continue; 
+        }
+        break; 
+    }
+
+    while (true) {
+        password = getHiddenInput("Enter password: ");
+        if (password == "0")
+            return;
+
+        if (!isValidPassword(password)) {
+            cout << "Invalid password. Must be at least 6 characters, include a letter and a number.\n";
+            continue; 
+        }
+
+        confirmPassword = getHiddenInput("Confirm password: ");
+        if (confirmPassword == "0")
+            return;
+
+        if (confirmPassword != password) {
+            cout << "Passwords do not match. Please try again.\n";
+            continue; 
+        }
+        break; 
+    }
+
+    if (isDuplicate(username, email, role)) {
+        cout << "Username or email already exists. Try again.\n";
+        return;
+    }
+
+    // Hash password before saving
+    string hashedPassword = SHA256::hash(password);
+
+    string filename = (role == "staff" ? "staff.txt" : "users.txt");
+    ofstream file(filename, ios::app);
+    if (file.is_open()) {
+        file << username << " " << email << " " << hashedPassword << endl;
+        file.close();
+        cout << (role == "staff" ? "Staff" : "User") << " sign up successful!\n";
+    }
+    else {
+        cout << "Error: Could not open file.\n";
+    }        
+             
 }
+
 
 void login(const string& role) {
     string usernameOrEmail, password;
     bool success = false;
 
-    cout << "\n===== " << (role == "staff" ? "STAFF" : role == "organizer" ? "ORGANIZER" : "USER") << " LOGIN =====" << endl;
-
-    string filename;
-    if (role == "staff") filename = "staff.txt";
-    else if (role == "user") filename = "users.txt";
-    else if (role == "organizer") filename = "organizers.txt";
+    cout << "\n===== " << (role == "staff" ? "STAFF" : "USER") << " LOGIN =====" << endl;
+    cout << "(Type '0' at any time to cancel)\n";
+    string filename = (role == "staff" ? "staff.txt" : "users.txt");
 
     while (true) {
         usernameOrEmail = getInput("Enter username or email: ");
-        password = getInput("Enter password: ");
+        if (usernameOrEmail == "0")
+            return;
+        password = getHiddenInput("Enter password: ");
+        if (password == "0")
+            return;
+        // Hash the input password
+        string hashedPassword = SHA256::hash(password);
 
         ifstream file(filename);
         if (!file.is_open()) {
@@ -185,7 +222,7 @@ void login(const string& role) {
         while (getline(file, line)) {
             stringstream ss(line);
             ss >> u >> e >> p;
-            if ((usernameOrEmail == u || usernameOrEmail == e) && password == p) {
+            if ((usernameOrEmail == u || usernameOrEmail == e) && hashedPassword == p) {
                 success = true;
                 break;
             }
@@ -197,12 +234,8 @@ void login(const string& role) {
             if (role == "staff") {
                 staffMainMenu(usernameOrEmail);
             }
-            else if (role == "organizer") {
-                organizerMainMenu(usernameOrEmail); // You need to implement this function!
-            }
             else {
                 userMainMenu(usernameOrEmail);
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             break;
         }
@@ -211,6 +244,7 @@ void login(const string& role) {
         }
     }
 }
+
 
 void homePageMenu() {
 

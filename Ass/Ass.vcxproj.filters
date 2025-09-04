@@ -42,6 +42,9 @@
     <ClCompile Include="organizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Encryption.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="events.txt">
@@ -68,6 +71,9 @@
     <Text Include="organizers.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="tickets.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="equipment.h">
@@ -92,6 +98,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="report.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="encryption.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
