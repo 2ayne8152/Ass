@@ -45,28 +45,28 @@ void eventMenu(const string& username) {
 		inputCheck(selection, 1, 5, "Invalid Input! Please Retry [1-5]: ");
 
 		switch (selection) {
-		case 1: {
-			createEvent(events, stages, username);
-			saveEventsToFile(events);
-			break;
-		}
-		case 2: {
-			makePayment(events, username);
-			break;
-		}
-		case 3: {
-			editEvents(events, username);
-			saveEventsToFile(events);
-			break;
-		}
-		case 4: {
-			viewEvents(events, username);
-			break;
-		}
-		case 5: {
-			condition = false;
-			return;
-		}
+			case 1: {
+				createEvent(events, username);
+				saveEventsToFile(events);
+				break;
+			}
+			case 2: {
+				makePayment(events, username);
+				break;
+			}
+			case 3: {
+				editEvents(events);
+				saveEventsToFile(events);
+				break;
+			}	  
+			case 4: {
+				viewEvents(events, username);
+				break;
+			}
+			case 5: {
+				condition = false;
+				return;
+			}
 		}
 	} while (condition);
 }
@@ -394,8 +394,8 @@ void saveEventsToFile(const vector<Event>& events) {
 }
 
 void loadEventsFromFile(vector<Event>& events) {
-	ifstream inFile(EVENTS_FILE);
-	if (!inFile) return;
+	ifstream inFile(FILE_NAME);
+	if (!inFile) return; // No file yet, skip loading
 
 	events.clear();
 	string line;
