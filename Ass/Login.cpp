@@ -2,7 +2,9 @@
 #include "user.h"
 #include "report.h"
 
+
 void staffMainMenu(const string& username);
+void organizerMainMenu(const string& username);
 void stageMenu();
 void crisisMenu();
 
@@ -42,9 +44,13 @@ bool isValidPassword(const string& password) {
 }
 
 bool isDuplicate(const string& username, const string& email, const string& role) {
-    string filename = (role == "staff" ? "staff.txt" : "users.txt");
-    ifstream file(filename);
+    string filename;
+    if (role == "staff") filename = "staff.txt";
+    else if (role == "user") filename = "users.txt";
+    else if (role == "organizer") filename = "organizers.txt";
+    else return false;
 
+    ifstream file(filename);
     if (!file.is_open()) return false;
 
     string line, u, e, p;
@@ -68,7 +74,7 @@ string getInput(const string& prompt) {
 void signUp(const string& role) {
     string username, email, password;
 
-    cout << "\n===== " << (role == "staff" ? "STAFF" : "USER") << " SIGN UP =====" << endl;
+    cout << "\n===== " << (role == "staff" ? "STAFF" : role == "organizer" ? "ORGANIZER" : "USER") << " SIGN UP =====" << endl;
     cout << "(Type 'exit' at any time to cancel)\n";
 
     // staff check passkey
@@ -135,13 +141,16 @@ void signUp(const string& role) {
             continue;
         }
 
-        //save to correct file 
-        string filename = (role == "staff" ? "staff.txt" : "users.txt");
+        string filename;
+        if (role == "staff") filename = "staff.txt";
+        else if (role == "user") filename = "users.txt";
+        else if (role == "organizer") filename = "organizers.txt";
+
         ofstream file(filename, ios::app);
         if (file.is_open()) {
             file << username << " " << email << " " << password << endl;
             file.close();
-            cout << (role == "staff" ? "Staff" : "User") << " sign up successful!" << ".\n";
+            cout << (role == "staff" ? "Staff" : role == "organizer" ? "Organizer" : "User") << " sign up successful!" << ".\n";
         }
         else {
             cout << "Error: Could not open file.\n";
@@ -154,9 +163,12 @@ void login(const string& role) {
     string usernameOrEmail, password;
     bool success = false;
 
-    cout << "\n===== " << (role == "staff" ? "STAFF" : "USER") << " LOGIN =====" << endl;
+    cout << "\n===== " << (role == "staff" ? "STAFF" : role == "organizer" ? "ORGANIZER" : "USER") << " LOGIN =====" << endl;
 
-    string filename = (role == "staff" ? "staff.txt" : "users.txt");
+    string filename;
+    if (role == "staff") filename = "staff.txt";
+    else if (role == "user") filename = "users.txt";
+    else if (role == "organizer") filename = "organizers.txt";
 
     while (true) {
         usernameOrEmail = getInput("Enter username or email: ");
@@ -173,7 +185,6 @@ void login(const string& role) {
         while (getline(file, line)) {
             stringstream ss(line);
             ss >> u >> e >> p;
-            //match username oe email
             if ((usernameOrEmail == u || usernameOrEmail == e) && password == p) {
                 success = true;
                 break;
@@ -183,14 +194,15 @@ void login(const string& role) {
 
         if (success) {
             cout << "\nLogin successful! Welcome, " << usernameOrEmail << ".\n";
-
-            // go back to correct main menu
             if (role == "staff") {
                 staffMainMenu(usernameOrEmail);
             }
+            else if (role == "organizer") {
+                organizerMainMenu(usernameOrEmail); // You need to implement this function!
+            }
             else {
                 userMainMenu(usernameOrEmail);
-                cin.ignore(numeric_limits<streamsize>::max(), '\n'); // clear leftover input
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
             break;
         }
@@ -245,7 +257,8 @@ void homePageMenu() {
                 cout << "\n===== LOG IN MENU =====\n";
                 cout << "1. Log In (Staff)\n";
                 cout << "2. Log In (User)\n";
-                cout << "3. Back to Home\n";
+                cout << "3. Log In (Organizer)\n";
+                cout << "4. Back to Home\n";
                 cout << "Choose an option: ";
 
                 string loginInput;
@@ -261,7 +274,7 @@ void homePageMenu() {
                 }
 
                 if (!isValidInput) {
-                    cout << "Invalid input! Enter 1-3.\n";
+                    cout << "Invalid input! Enter 1-4.\n";
                     continue;
                 }
 
@@ -276,10 +289,14 @@ void homePageMenu() {
                     inLoginMenu = false;
                     break;
                 case 3:
+                    login("organizer");
+                    inLoginMenu = false;
+                    break;
+                case 4:
                     inLoginMenu = false;
                     break;
                 default:
-                    cout << "Invalid choice! Enter 1-3.\n";
+                    cout << "Invalid choice! Enter 1-4.\n";
                     break;
                 }
             }
@@ -292,7 +309,8 @@ void homePageMenu() {
                 cout << "\n===== SIGN UP MENU =====\n";
                 cout << "1. Sign Up (Staff)\n";
                 cout << "2. Sign Up (User)\n";
-                cout << "3. Back to Home\n";
+                cout << "3. Sign Up (Organizer)\n";
+                cout << "4. Back to Home\n";
                 cout << "Choose an option: ";
 
                 string signUpInput;
@@ -307,7 +325,7 @@ void homePageMenu() {
                 }
 
                 if (!isValidInput) {
-                    cout << "Invalid input! Enter 1-3.\n";
+                    cout << "Invalid input! Enter 1-4.\n";
                     continue;
                 }
 
@@ -322,16 +340,19 @@ void homePageMenu() {
                     inSignUpMenu = false;
                     break;
                 case 3:
+                    signUp("organizer");
+                    inSignUpMenu = false;
+                    break;
+                case 4:
                     inSignUpMenu = false;
                     break;
                 default:
-                    cout << "Invalid choice! Enter 1-3.\n";
+                    cout << "Invalid choice! Enter 1-4.\n";
                     break;
                 }
             }
             break;
         }
-
 
         case 3:
             cout << "Exiting program. Goodbye!\n";
@@ -343,7 +364,6 @@ void homePageMenu() {
         }
     }
 }
-
 void staffMainMenu(const string& username) {
     int choice;
     string input;

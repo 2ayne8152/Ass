@@ -39,6 +39,9 @@
     <ClCompile Include="Report.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="organizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="events.txt">
@@ -60,6 +63,9 @@
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="users.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="organizers.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>
