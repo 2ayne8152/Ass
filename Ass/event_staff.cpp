@@ -33,6 +33,22 @@ bool isValidEventName(const string& event) {
     return event.length() > 3 && event.length() <= 15;
 }
 
+bool eventExists(const string& eventName) {
+    ifstream file("events.txt");
+    if (!file.is_open()) return false;
+    string line;
+    while (getline(file, line)) {
+        stringstream ss(line);
+        string id, name;
+        getline(ss, id, '|');
+        getline(ss, name, '|');
+        if (name == eventName) {
+            return true;
+        }
+    }
+    return false;
+}
+
 string fitToWidth(const string& text, size_t width) {
     if (text.size() <= width) return text;
     return text.substr(0, width - 3) + "..."; // add "..." if too long
@@ -164,7 +180,7 @@ void displayAllEventStaff(const vector<EventStaff>& staffList) {
     cout << endl;
 
     string title = " ALL EVENT STAFF ";
-    int totalWidth = 95; 
+    int totalWidth = 95;
     int sideWidth = (totalWidth - title.size()) / 2;
 
     cout << string(sideWidth, '=') << title << string(totalWidth - sideWidth - title.size(), '=') << endl;
@@ -249,7 +265,7 @@ void addEventStaffFromInput(vector<EventStaff>& staffList) {
             cout << "Invalid format. Please use XXX-XXXXXXX (e.g., 012-3456789).\n";
             continue;
         }
-        break; 
+        break;
     }
 
     while (true) {
@@ -263,6 +279,10 @@ void addEventStaffFromInput(vector<EventStaff>& staffList) {
 
         if (!isValidEventName(event)) {
             cout << "Invalid event name. Must be more than 3 and no more than 15 characters.\n";
+            continue;
+        }
+        if (!eventExists(event)) {
+            cout << "Event doesn't exist. Please enter again.\n";
             continue;
         }
         break;
@@ -378,6 +398,7 @@ void manageEventStaffMenu(const vector<EventStaff>& staffList) {
             searchStaffById(workingList);
             break;
         case 6:
+            system("cls");
             cout << "Returning to main menu...\n";
             return;
         default:

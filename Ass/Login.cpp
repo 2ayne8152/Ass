@@ -31,8 +31,8 @@ bool isValidEmail(const string& email) {
 }
 
 bool isValidPassword(const string& password) {
-    if (password.length() < 6) 
-        return false; 
+    if (password.length() < 6)
+        return false;
     bool hasLetter = false, hasDigit = false;
     for (char c : password) {
         if (isalpha(c)) hasLetter = true;
@@ -70,7 +70,7 @@ void signUp(const string& role) {
 
     cout << "\n===== " << (role == "staff" ? "STAFF" : "USER") << " SIGN UP =====" << endl;
     cout << "(Type 'exit' at any time to cancel)\n";
-    
+
     // staff check passkey
     if (role == "staff") {
         string passkey;
@@ -141,7 +141,7 @@ void signUp(const string& role) {
         if (file.is_open()) {
             file << username << " " << email << " " << password << endl;
             file.close();
-            cout <<  (role == "staff" ? "Staff" : "User") << " sign up successful!" << ".\n";
+            cout << (role == "staff" ? "Staff" : "User") << " sign up successful!" << ".\n";
         }
         else {
             cout << "Error: Could not open file.\n";
@@ -350,7 +350,7 @@ void staffMainMenu(const string& username) {
 
     while (true) {
         cout << "\n===== EVENT ORGANIZER STAFF MENU =====\n";
-        cout << "Welcome, " << username << "!\n";
+        cout << "Welcome, " << username << "!\n\n";
         cout << "1. Manage Event Staff\n";
         cout << "2. Event Menu\n";
         cout << "3. Crisis Management\n";
@@ -379,7 +379,7 @@ void staffMainMenu(const string& username) {
             crisisMenu();
             break;
         case 4:
-            reportMenu();  
+            reportMenu();
             break;
         case 5:
             cout << "Logging out...\n";
