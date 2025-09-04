@@ -6,16 +6,17 @@ struct Stage {
     string stageNumber;
     string stageName;
     int capacity = 0;
-    bool isOperational = "true";
+    bool isOperational = true;
     string currentEvent;
+    double pricePerDay = 0.0;
 
     Stage() = default;
 
     Stage(string _stageNumber, string _stageName, int _capacity,
-        bool _isOperational = true, string _currentEvent = "")
+        bool _isOperational = true, string _currentEvent = "", double _pricePerDay = 0.0)
         : stageNumber(_stageNumber), stageName(_stageName),
         capacity(_capacity), isOperational(_isOperational),
-        currentEvent(_currentEvent) {
+        currentEvent(_currentEvent), pricePerDay(_pricePerDay) {
     }
 };
 

@@ -129,6 +129,7 @@
     <ClCompile Include="Login.cpp" />
     <ClCompile Include="EventRegistration.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="organizer.cpp" />
     <ClCompile Include="Report.cpp" />
     <ClCompile Include="User.cpp" />
   </ItemGroup>
@@ -137,6 +138,7 @@
     <Text Include="events.txt" />
     <Text Include="event_staff.txt" />
     <Text Include="last_staff_id.txt" />
+    <Text Include="organizers.txt" />
     <Text Include="staff.txt" />
     <Text Include="stages.txt" />
     <Text Include="tickets.txt" />
