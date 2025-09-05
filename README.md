@@ -16,8 +16,8 @@ Passwords are **secured with SHA-256 hashing** using OpenSSL.
 
 ### Step 1: Download OpenSSL
 1. Go to [https://slproweb.com/products/Win32OpenSSL.html](https://slproweb.com/products/Win32OpenSSL.html)  
-2. Download the latest **Win64 OpenSSL** (choose *full* or *light* installer).  
-   Example: `Win64OpenSSL-3_xx_Light.exe`
+2. Download the latest **Win64 OpenSSL** (choose *full* installer).  
+   Example: `Win64OpenSSL-3.5.2_.exe`
 
 ---
 
