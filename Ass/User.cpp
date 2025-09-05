@@ -14,7 +14,6 @@ void bookTickets(vector<Event>& events, vector<Ticket>& tickets, const string& u
 void viewUserBookings(const vector<Ticket>& tickets, const string& username);
 void saveTicketsToFile(const vector<Ticket>& tickets);
 void loadTicketsFromFile(vector<Ticket>& tickets);
-void inputCheck(int& input, double min, double max, string errormsg);
 void makePayment(vector<Event>& events, vector<Ticket>& tickets, const string& username);
 
 const string EVENTS_FILE = "events.txt";
@@ -61,12 +60,14 @@ void userMainMenu(const string& username) {
             break;
         case 5:
             condition = false;
+			clearScreen();
             return;
         }
     } while (condition);
 }
 
 void viewAvailableEvents(const vector<Event>& events) {
+	clearScreen();
     cout << "\n=== Available Events ===\n";
     bool hasEvents = false;
 
@@ -89,9 +90,11 @@ void viewAvailableEvents(const vector<Event>& events) {
         cout << "No upcoming events with available tickets.\n";
     }
     cout << "\n";
+    pauseScreen();
 }
 
 void makePayment(vector<Event>& events, vector<Ticket>& tickets, const string& username) {
+    clearScreen();
     cout << "\n=== Make Payment ===\n";
     vector<int> unpaidIndexes;
 
@@ -150,9 +153,11 @@ void makePayment(vector<Event>& events, vector<Ticket>& tickets, const string& u
     else {
         cout << "Payment cancelled.\n";
     }
+    pauseScreen();
 }
 
 void bookTickets(vector<Event>& events, vector<Ticket>& tickets, const string& username) {
+    clearScreen();
     cout << "\n=== Book Tickets ===\n";
 
     vector<int> availableIndexes;
@@ -216,9 +221,11 @@ void bookTickets(vector<Event>& events, vector<Ticket>& tickets, const string& u
         << "\nTickets Booked: " << ticketsToBook
         << "\nTotal Price: RM" << fixed << setprecision(2) << t.totalPrice
         << "\n";
+    pauseScreen();
 }
 
 void viewUserBookings(const vector<Ticket>& tickets, const string& username) {
+    clearScreen();
     cout << "\n=== My Bookings ===\n";
     bool hasBookings = false;
 
@@ -239,6 +246,7 @@ void viewUserBookings(const vector<Ticket>& tickets, const string& username) {
         cout << "You have no bookings yet.\n";
     }
     cout << "\n";
+    pauseScreen();
 }
 
 void saveTicketsToFile(const vector<Ticket>& tickets) {
