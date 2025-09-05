@@ -1,4 +1,4 @@
-﻿﻿#include <iostream>
+﻿#include <iostream>
 #include <vector>
 #include <string>
 #include <fstream>
@@ -46,7 +46,7 @@ void eventMenu(const string& username) {
 
 		switch (selection) {
 			case 1: {
-				createEvent(events, username);
+				createEvent(events, stages, username);
 				saveEventsToFile(events);
 				break;
 			}
@@ -55,7 +55,7 @@ void eventMenu(const string& username) {
 				break;
 			}
 			case 3: {
-				editEvents(events);
+				editEvents(events, username);
 				saveEventsToFile(events);
 				break;
 			}	  
@@ -394,7 +394,7 @@ void saveEventsToFile(const vector<Event>& events) {
 }
 
 void loadEventsFromFile(vector<Event>& events) {
-	ifstream inFile(FILE_NAME);
+	ifstream inFile(EVENTS_FILE);
 	if (!inFile) return; // No file yet, skip loading
 
 	events.clear();
