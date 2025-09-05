@@ -43,10 +43,9 @@ Passwords are **secured with SHA-256 hashing** using OpenSSL.
 3. Under **Configuration Properties → C/C++ → General → Additional Include Directories** add:
   C:\Program File\OpenSSL-Win64\include (depends on the file location)
 4. Under **Configuration Properties → Linker → General → Additional Library Directories** add:
-  C:\Program File\OpenSSL-Win64\lib\VC\MD (depends on the file location)
+  C:\Program File\OpenSSL-Win64\lib\VC\x64\MD (depends on the file location)
 5. Under **Configuration Properties → Linker → Input → Additional Dependencies** add:
-  libssl.lib
-  libcrypto.lib
+  libssl.lib;libcrypto.lib
 
 ---
 
