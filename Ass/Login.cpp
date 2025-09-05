@@ -234,6 +234,9 @@ void login(const string& role) {
             if (role == "staff") {
                 staffMainMenu(usernameOrEmail);
             }
+            else if (role == "organizer") {
+                organizerMainMenu(usernameOrEmail);
+			}
             else {
                 userMainMenu(usernameOrEmail);
             }

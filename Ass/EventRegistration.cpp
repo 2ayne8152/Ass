@@ -15,7 +15,6 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 void viewEvents(const vector<Event>& events, const string& username);
 void makePayment(vector<Event>& events, const string& username);
 void saveEventsToFile(const vector<Event>& events);
-void inputCheck(int& input, double min, double max, string errormsg);
 void editEvents(vector<Event>& events, const string& username);
 bool isValidTime(const string& time);
 bool isValidDate(const string& date);
@@ -32,12 +31,13 @@ void eventMenu(const string& username) {
 	bool condition = true;
 
 	do {
-		cout << "==== Venue Booking Menu ====" << endl;
-		cout << "1. Book Venue" << endl;
-		cout << "2. Make Payment" << endl;
-		cout << "3. Edit Booking" << endl;
-		cout << "4. View Booking History" << endl;
-		cout << "5. Quit" << endl;
+		clearScreen();
+		cout << "==== Venue Booking Menu ====\n";
+		cout << "1. Book Venue\n";
+		cout << "2. Make Payment\n";
+		cout << "3. Edit Booking\n";
+		cout << "4. View Booking History\n";
+		cout << "5. Quit\n";
 		cout << "Select an option: ";
 
 		int selection;
@@ -45,34 +45,35 @@ void eventMenu(const string& username) {
 		inputCheck(selection, 1, 5, "Invalid Input! Please Retry [1-5]: ");
 
 		switch (selection) {
-			case 1: {
-				createEvent(events, stages, username);
-				saveEventsToFile(events);
-				break;
-			}
-			case 2: {
-				makePayment(events, username);
-				break;
-			}
-			case 3: {
-				editEvents(events, username);
-				saveEventsToFile(events);
-				break;
-			}	  
-			case 4: {
-				viewEvents(events, username);
-				break;
-			}
-			case 5: {
-				condition = false;
-				return;
-			}
+		case 1:
+			createEvent(events, stages, username);
+			saveEventsToFile(events);
+			break;
+
+		case 2:
+			makePayment(events, username);
+			break;
+
+		case 3:
+			editEvents(events, username);
+			saveEventsToFile(events);
+			break;
+
+		case 4:
+			viewEvents(events, username);
+			break;
+
+		case 5:
+			condition = false;
+			clearScreen();
+			return;
 		}
 	} while (condition);
 }
 
 void createEvent(vector<Event>& events, const vector<Stage>& stages, const string& username) {
-	cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear leftover input
+	clearScreen();
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
 	string name, date, startTime, endTime;
 	double ticketPrice;
@@ -88,19 +89,22 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 		if (name.empty()) cout << "Event name cannot be empty!\n";
 	} while (name.empty());
 
-	// Choose Venue from Available Stages
-	if (stages.empty()) {
-		cout << " No stages available. Please add stages first!\n";
-		return;
-	}
-
+	// Show Available Stages
+	vector<int> operationalStages;
 	cout << "\n=== Available Stages ===\n";
 	for (size_t i = 0; i < stages.size(); ++i) {
 		cout << i + 1 << ". " << stages[i].stageName
 			<< " (Capacity: " << stages[i].capacity
 			<< ", Status: " << (stages[i].isOperational ? "Operational" : "Not Operational") << ")\n";
+		if (stages[i].isOperational) operationalStages.push_back(i);
 	}
 
+	if (operationalStages.empty()) {
+		cout << "\n No operational stages available. Please contact the admin.\n";
+		return;
+	}
+
+	// Stage Selection
 	int stageChoice;
 	do {
 		cout << "Select a stage by number: ";
@@ -175,17 +179,19 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 		date,
 		startTime,
 		endTime,
-		"Upcoming",       // Default status
-		username,         // Organizer
+		"Upcoming",
+		username,
 		ticketPrice,
 		availableTickets
 	);
 
-	cout << "\n Event created successfully!\n";
-	cout << "   Venue: " << venue << " | Tickets Available: " << availableTickets << "\n";
+	cout << "\nEvent created successfully!\n";
+	cout << "Venue: " << venue << " | Tickets Available: " << availableTickets << "\n";
+	pauseScreen();
 }
 
 void viewEvents(const vector<Event>& events, const string& username) {
+	clearScreen();
 	cout << "\n=== Your Booking History ===\n";
 	bool hasEvents = false;
 
@@ -210,9 +216,11 @@ void viewEvents(const vector<Event>& events, const string& username) {
 		cout << "You haven't created any events yet.\n";
 	}
 	cout << "\n";
+	pauseScreen();
 }
 
 void makePayment(vector<Event>& events, const string& username) {
+	clearScreen();
 	cout << "\n=== Unpaid Events ===\n";
 
 	vector<int> unpaidIndexes;
@@ -253,9 +261,11 @@ void makePayment(vector<Event>& events, const string& username) {
 	events[index].paymentStatus = "Paid";
 
 	cout << "\nPayment successful for event: " << events[index].name << "\n";
+	pauseScreen();
 }
 
 void editEvents(vector<Event>& events, const string& username) {
+	clearScreen();
 	vector<int> editableIds;
 
 	cout << "\n=== Your Upcoming Events ===\n";
@@ -367,6 +377,7 @@ void editEvents(vector<Event>& events, const string& username) {
 			break;
 		}
 	} while (condition);
+	pauseScreen();
 }
 
 void saveEventsToFile(const vector<Event>& events) {

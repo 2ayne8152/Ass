@@ -4,7 +4,23 @@
 #include <iostream>
 #include <limits>
 #include <string>
+#include <cstdlib>  // For system()
+
 using namespace std;
+
+inline void clearScreen() {
+#ifdef _WIN32
+    system("cls");   // Windows
+#else
+    system("clear"); // Linux/Mac
+#endif
+}
+
+inline void pauseScreen() {
+    cout << "\nPress Enter to continue...";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    cin.get();
+}
 
 inline int getValidatedInt(const string& prompt) {
     int num;
@@ -19,7 +35,7 @@ inline int getValidatedInt(const string& prompt) {
     }
 }
 
-inline void inputCheck(int& input, double min, double max, string errormsg) {
+inline void inputCheck(int& input, int min, int max, string errormsg) {
     while (cin.fail() || input < min || input > max) {
         cin.clear();
         cin.ignore(100, '\n');
