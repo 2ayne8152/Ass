@@ -5,10 +5,13 @@
 #include <vector>
 #include <iomanip>
 #include "equipment.h"
+#include "events.h"
 using namespace std;
 
 vector<Stage> stages;
 void equipmentMenu();
+bool isValidEventName(const string& event);
+bool eventExists(const string& eventName);
 
 void loadStagesFromFile() {
     ifstream file("stages.txt");
@@ -65,7 +68,7 @@ void loadStagesFromFile() {
 
             stage.isOperational = (operational == "true" || operational == "1");
 
-            if (currentEvent.empty() || currentEvent == "\"\"" || currentEvent == "\"\"") {
+            if (currentEvent.empty() || currentEvent == "\"\"") {
                 stage.currentEvent = "";
             }
             else {
@@ -112,8 +115,8 @@ void displayAllStages() {
     cout << endl;
 
     string title = " ALL VENUE STAGES ";
-    int totalWidth = 85;
-    int sideWidth = (totalWidth - title.size()) / 2;
+    int totalWidth = 86;
+    int sideWidth = static_cast<int>((totalWidth - title.size()) / 2);
 
     cout << string(sideWidth, '=') << title << string(totalWidth - sideWidth - title.size(), '=') << endl;
     cout << endl;
@@ -127,7 +130,7 @@ void displayAllStages() {
         << setw(5) << "No."
         << setw(8) << "ID"
         << setw(18) << "Stage Name"
-        << setw(8) << "Capacity"
+        << setw(9) << "Capacity"
         << setw(12) << "Status"
         << setw(15) << "Current Event"
         << setw(15) << "Price/Day" << endl;
@@ -137,7 +140,7 @@ void displayAllStages() {
     for (size_t i = 0; i < stages.size(); i++) {
         cout << left
             << setw(5) << (i + 1)
-            << setw(8) << stages[i].stageNumber
+            << setw(9) << stages[i].stageNumber
             << setw(18) << stages[i].stageName
             << setw(8) << stages[i].capacity
             << setw(12) << (stages[i].isOperational ? "Operational" : "BROKEN")
@@ -186,8 +189,25 @@ void assignEventToStage() {
         }
     }
 
-    cout << "Enter event name to assign: ";
-    getline(cin, eventName);
+    while (true) {
+        cout << "Enter event name to assign (or type 'exit' to cancel): ";
+        getline(cin, eventName);
+
+        if (eventName == "exit") {
+            cout << "Assignment cancelled.\n";
+            return;
+        }
+
+        if (!isValidEventName(eventName)) {
+            cout << "Invalid event name. Must be more than 3 and no more than 15 characters.\n";
+            continue;
+        }
+        if (!eventExists(eventName)) {
+            cout << "Event doesn't exist. Please enter again.\n";
+            continue;
+        }
+        break;
+    }
 
     selectedStage->currentEvent = eventName;
     saveStagesToFile();
