@@ -17,7 +17,7 @@ Passwords are **secured with SHA-256 hashing** using OpenSSL.
 ### Step 1: Download OpenSSL
 1. Go to [https://slproweb.com/products/Win32OpenSSL.html](https://slproweb.com/products/Win32OpenSSL.html)  
 2. Download the latest **Win64 OpenSSL** (choose *full* installer).  
-   Example: `Win64OpenSSL-3.5.2_.exe`
+   Example: `Win64OpenSSL-3.5.2`
 
 ---
 
@@ -32,7 +32,7 @@ Passwords are **secured with SHA-256 hashing** using OpenSSL.
 2. Go to **Advanced → Environment Variables**.  
 3. Under *System variables*, select `Path` → **Edit**.  
 4. Add:
-   C:\OpenSSL-Win64\bin (depends on the file location)
+   C:\Program File\OpenSSL-Win64\bin (depends on the file location)
 6. Click OK.
 
 ---
@@ -41,9 +41,9 @@ Passwords are **secured with SHA-256 hashing** using OpenSSL.
 1. Open your solution (`Ass.sln`) in **Visual Studio**.  
 2. Right-click your project → **Properties**.  
 3. Under **Configuration Properties → C/C++ → General → Additional Include Directories** add:
-  C:\OpenSSL-Win64\include (depends on the file location)
+  C:\Program File\OpenSSL-Win64\include (depends on the file location)
 4. Under **Configuration Properties → Linker → General → Additional Library Directories** add:
-  C:\OpenSSL-Win64\lib (depends on the file location)
+  C:\Program File\OpenSSL-Win64\lib\VC\MD (depends on the file location)
 5. Under **Configuration Properties → Linker → Input → Additional Dependencies** add:
   libssl.lib
   libcrypto.lib
