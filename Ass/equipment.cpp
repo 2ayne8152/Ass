@@ -187,7 +187,6 @@ void addEquipment() {
     cout << "Equipment added successfully!\n";
 }
 
-
 void removeEquipment() {
     displayAllEquipment();
 
@@ -361,4 +360,3 @@ void equipmentMenu() {
         }
     }
 }
-
