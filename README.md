@@ -30,7 +30,7 @@ Passwords are **secured with SHA-256 hashing** using OpenSSL.
 ### Step 3: Add OpenSSL to PATH
 1. Press **Win + R**, type `sysdm.cpl`, press Enter.  
 2. Go to **Advanced → Environment Variables**.  
-3. Under *System variables*, select `Path` → **Edit**.  
+3. Under *System variables*, select `Path` → **Edit** -> **New**.  
 4. Add:
    C:\Program File\OpenSSL-Win64\bin (depends on the file location)
 6. Click OK.
