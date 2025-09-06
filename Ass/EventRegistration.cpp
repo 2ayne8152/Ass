@@ -160,6 +160,28 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 		break;
 	} while (true);
 
+	bool conflict = false;
+	for (const auto& e : events) {
+		if (e.venue == venue && e.date == date) {
+			int eStartH, eStartM, eEndH, eEndM;
+			sscanf_s(e.startTime.c_str(), "%d:%d", &eStartH, &eStartM);
+			sscanf_s(e.endTime.c_str(), "%d:%d", &eEndH, &eEndM);
+			int newStart = stoi(startTime.substr(0, 2)) * 60 + stoi(startTime.substr(3, 2));
+			int newEnd = stoi(endTime.substr(0, 2)) * 60 + stoi(endTime.substr(3, 2));
+			int existingStart = eStartH * 60 + eStartM;
+			int existingEnd = eEndH * 60 + eEndM;
+			if ((newStart < existingEnd) && (existingStart < newEnd)) {
+				conflict = true;
+				break;
+			}
+		}
+	}
+
+	if (conflict) {
+		cout << "\nScheduling conflict detected! The selected stage is already booked for the chosen date and time.\n";
+		return;
+	}
+
 	// Input Ticket Price
 	do {
 		cout << "Enter Ticket Price (RM): ";
