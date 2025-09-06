@@ -11,4 +11,4 @@
 #include "events.h"
 using namespace std;
 
-void homePageMenu();
+void homePageMenu(const string& message = "");

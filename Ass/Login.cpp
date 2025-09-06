@@ -3,6 +3,7 @@
 #include "report.h"
 #include "encryption.h"
 #include <conio.h>  
+#include "util.h"
 
 void staffMainMenu(const string& username);
 void organizerMainMenu(const string& username);
@@ -125,57 +126,59 @@ void signUp(const string& role) {
             }
         }
     }
-
     while (true) {
-        username = getInput("Enter username: ");
-        if (username == "0")
-            return;
+        while (true) {
+            username = getInput("Enter username: ");
+            if (username == "0")
+                return;
 
-        if (!isValidUsername(username)) {
-            cout << "Invalid username. Must be at least 3 characters (letters, numbers, underscore).\n";
-            continue; 
+            if (!isValidUsername(username)) {
+                cout << "Invalid username. Must be at least 3 characters (letters, numbers, underscore).\n";
+                continue;
+            }
+            break;
         }
-        break; 
+
+        while (true) {
+            email = getInput("Enter email: ");
+            if (email == "0")
+                return;
+
+            if (!isValidEmail(email)) {
+                cout << "Invalid email format.\n";
+                continue;
+            }
+            break;
+        }
+
+        while (true) {
+            password = getHiddenInput("Enter password: ");
+            if (password == "0")
+                return;
+
+            if (!isValidPassword(password)) {
+                cout << "Invalid password. Must be at least 6 characters, include a letter and a number.\n";
+                continue;
+            }
+
+            confirmPassword = getHiddenInput("Confirm password: ");
+            if (confirmPassword == "0")
+                return;
+
+            if (confirmPassword != password) {
+                cout << "Passwords do not match. Please try again.\n";
+                continue;
+            }
+            break;
+        }
+
+        if (isDuplicate(username, email, role)) {
+            cout << "Username or email already exists. Try again.\n";
+            continue;
+        }
+        break;
     }
     
-    while (true) {
-        email = getInput("Enter email: ");
-        if (email == "0") 
-            return;
-
-        if (!isValidEmail(email)) {
-            cout << "Invalid email format.\n";
-            continue; 
-        }
-        break; 
-    }
-
-    while (true) {
-        password = getHiddenInput("Enter password: ");
-        if (password == "0")
-            return;
-
-        if (!isValidPassword(password)) {
-            cout << "Invalid password. Must be at least 6 characters, include a letter and a number.\n";
-            continue; 
-        }
-
-        confirmPassword = getHiddenInput("Confirm password: ");
-        if (confirmPassword == "0")
-            return;
-
-        if (confirmPassword != password) {
-            cout << "Passwords do not match. Please try again.\n";
-            continue; 
-        }
-        break; 
-    }
-
-    if (isDuplicate(username, email, role)) {
-        cout << "Username or email already exists. Try again.\n";
-        return;
-    }
-
     // Hash password before saving
     string hashedPassword = SHA256::hash(password);
 
@@ -248,47 +251,56 @@ void login(const string& role) {
     }
 }
 
-
-void homePageMenu() {
-
-
-    cout << R"ASCII(
+void homePageMenu(const string& message) {
+    while (true) {
+        clearScreen();
+        cout << R"ASCII(
      ██╗ █████╗ ███╗   ███╗    ██████╗  ██╗      █████╗ ███╗   ██╗
      ██║██╔══██╗████╗ ████║    ██╔══██╗ ██║     ██╔══██╗████╗  ██║
      ██║███████║██╔████╔██║    ██████╔╝ ██║     ███████║██╔██╗ ██║
 ██   ██║██╔══██║██║╚██╔╝██║    ██╔═══╝  ██║     ██╔══██║██║╚██╗██║
 ╚█████╔╝██║  ██║██║ ╚═╝ ██║    ██║      ███████╗██║  ██║██║ ╚████║
  ╚════╝ ╚═╝  ╚═╝╚═╝     ╚═╝    ╚═╝      ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝
-)ASCII" << endl;
+    )ASCII" << endl;
 
-
-    while (true) {
         cout << "\n===== HOME PAGE =====\n";
         cout << "1. Log In\n";
         cout << "2. Sign Up\n";
         cout << "3. Exit\n";
-        cout << "Choose an option: ";
 
         string choiceStr;
-        getline(cin, choiceStr);
+        int choice = 0;
 
-        bool isValid = !choiceStr.empty();
-        for (char c : choiceStr) {
-            if (!isdigit(c)) {
-                isValid = false;
-                break;
+        // input loop (only re-asks on error)
+        while (true) {
+            cout << "Choose an option: ";
+            getline(cin, choiceStr);
+
+            bool isValid = !choiceStr.empty();
+            for (char c : choiceStr) {
+                if (!isdigit(c)) {
+                    isValid = false;
+                    break;
+                }
             }
+
+            if (!isValid) {
+                cout << "Invalid input! Please enter 1-3.\n";
+                continue; // stay in this loop
+            }
+
+            choice = stoi(choiceStr);
+            if (choice < 1 || choice > 3) {
+                cout << "Invalid choice! Enter 1-3.\n";
+                continue;
+            }
+            break; // valid choice
         }
 
-        if (!isValid) {
-            cout << "Invalid input! Please enter 1-3.\n";
-            continue;
-        }
-
-        int choice = stoi(choiceStr);
-
+        // handle valid choice
         switch (choice) {
         case 1: { // login menu
+            clearScreen();
             bool inLoginMenu = true;
             while (inLoginMenu) {
                 cout << "\n===== LOG IN MENU =====\n";
@@ -302,7 +314,6 @@ void homePageMenu() {
                 getline(cin, loginInput);
 
                 bool isValidInput = !loginInput.empty();
-
                 for (char ch : loginInput) {
                     if (!isdigit(ch)) {
                         isValidInput = false;
@@ -341,6 +352,7 @@ void homePageMenu() {
         }
 
         case 2: { // SIGN UP MENU
+            clearScreen();
             bool inSignUpMenu = true;
             while (inSignUpMenu) {
                 cout << "\n===== SIGN UP MENU =====\n";
@@ -394,18 +406,16 @@ void homePageMenu() {
         case 3:
             cout << "Exiting program. Goodbye!\n";
             return;
-
-        default:
-            cout << "Invalid choice. Please try again.\n";
-            break;
         }
     }
 }
+
 void staffMainMenu(const string& username) {
     int choice;
     string input;
 
     while (true) {
+        clearScreen();
         cout << "\n===== EVENT ORGANIZER STAFF MENU =====\n";
         cout << "Welcome, " << username << "!\n\n";
         cout << "1. Manage Event Staff\n";
