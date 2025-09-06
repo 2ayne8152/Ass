@@ -178,7 +178,13 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 	}
 
 	if (conflict) {
-		cout << "\nScheduling conflict detected! The selected stage is already booked for the chosen date and time.\n";
+		cout << "+-----------------------------+" << endl;
+		cout << "|Scheduling conflict detected!|" << endl;
+		cout << "|The selected stage is already|" << endl;
+		cout << "|booked for the chosen date   |" << endl;
+		cout << "|and time.                    |" << endl;
+		cout << "+-----------------------------+" << endl;
+		pauseScreen();
 		return;
 	}
 
