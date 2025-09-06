@@ -1,3 +1,11 @@
-1|23456789|1234567890|20-12-2000|10:59|11:00|Upcoming|Unpaid|abcd|1.23457e+19|121
-2|IAMMUSIC|Main Stage|24-02-2025|21:00|23:00|Upcoming|Unpaid|Wayne|25|5000
-3|DiddyParty|VIP Lounge|15-01-2025|04:00|12:00|Upcoming|Paid|menghao|140|180
+1|Rock Legends Reunion|Main Stage|2025-09-20|18:00|22:30|Upcoming|Paid|PowerSound Entertainment|120|4690
+2|EDM Night: Neon Beats|Second Stage|2025-09-21|20:00|01:00|Upcoming|Unpaid|NightWave Productions|90|2800
+3|Indie Acoustic Evening|Conference Hall|2025-09-22|19:30|22:00|Upcoming|Unpaid|Harmony Live|55|700
+4|Street Music Festival|Outside Area|2025-09-23|16:00|23:00|Upcoming|Unpaid|OpenVibe|45|1800
+5|Jazz & Wine Night|VIP Lounge|2025-09-24|20:00|23:00|Upcoming|Unpaid|BlueNote Events|150|180
+6|Pop Extravaganza|Main Stage|2025-09-25|19:00|23:30|Upcoming|Unpaid|StarBurst Entertainment|100|4900
+7|Metal Storm Festival|Second Stage|2025-09-26|18:00|00:00|Upcoming|Unpaid|ThunderRock Productions|85|2700
+8|Classical Evening Symphony|Conference Hall|2025-09-27|19:00|22:00|Upcoming|Unpaid|Golden Strings|65|750
+9|Summer Reggae Vibes|Outside Area|2025-09-28|17:00|23:00|Upcoming|Unpaid|IslandRhythm|50|1900
+10|Exclusive DJ VIP Night|VIP Lounge|2025-09-29|22:00|02:00|Upcoming|Unpaid|Luxe Beats|180|150
+11|IAMMUSIC|Main Stage|24-02-2025|21:00|23:00|Upcoming|Unpaid|Wayne|25|5000

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <format>
 #include "events.h"
 #include "user.h"
 #include "util.h"
@@ -66,54 +67,101 @@ void userMainMenu(const string& username) {
     } while (condition);
 }
 
-void viewAvailableEvents(const vector<Event>& events) {
-	clearScreen();
-    cout << "\n=== Available Events ===\n";
-    bool hasEvents = false;
+void printTableLine() {
+    cout << "+------+------------------------------+-----------------+------------+---------------+--------------------------+---------------+------------+\n";
+}
 
+void viewAvailableEvents(const vector<Event>& events) {
+    clearScreen();
+
+    // Table width for centering title
+    const int tableWidth = 140;
+    string title = "=== Available Events ===";
+    int padding = (tableWidth - (int)title.size()) / 2;
+    cout << string(padding, ' ') << title << "\n\n";
+
+    // Table header
+    printTableLine();
+    cout << "| " << setw(4) << left << "ID"
+        << " | " << setw(28) << left << "Name"
+        << " | " << setw(15) << left << "Venue"
+        << " | " << setw(10) << left << "Date"
+        << " | " << setw(13) << left << "Time"
+        << " | " << setw(24) << left << "Organizer"
+        << " | " << setw(13) << right << "Price (RM)"
+        << " | " << setw(10) << right << "Tickets" << " |\n";
+    printTableLine();
+
+    bool hasEvents = false;
     for (const auto& e : events) {
         if (e.status == "Upcoming" && e.availableTickets > 0) {
             hasEvents = true;
-            cout << "\nEvent ID: " << e.id
-                << "\nName: " << e.name
-                << "\nVenue: " << e.venue
-                << "\nDate: " << e.date
-                << "\nTime: " << e.startTime << " - " << e.endTime
-                << "\nOrganizer: " << e.organizerName
-                << "\nTicket Price: RM" << fixed << setprecision(2) << e.ticketPrice
-                << "\nAvailable Tickets: " << e.availableTickets
-                << "\n-----------------------------";
+
+            string timeRange = e.startTime + " - " + e.endTime;
+
+            cout << "| " << setw(4) << left << e.id
+                << " | " << setw(28) << left << e.name.substr(0, 28)
+                << " | " << setw(15) << left << e.venue.substr(0, 15)
+                << " | " << setw(10) << left << e.date
+                << " | " << setw(13) << left << timeRange
+                << " | " << setw(24) << left << e.organizerName.substr(0, 24)
+                << " | " << setw(13) << right << fixed << setprecision(2) << e.ticketPrice
+                << " | " << setw(10) << right << e.availableTickets << " |\n";
         }
     }
 
     if (!hasEvents) {
-        cout << "No upcoming events with available tickets.\n";
+        cout << "| " << setw(125) << left << "No upcoming events with available tickets."
+            << " |\n";
     }
+
+    printTableLine();
     cout << "\n";
     pauseScreen();
 }
 
+void printPaymentLine() {
+    cout << "+-----+----------+------------------------------+-----+---------------+----------+\n";
+}
+
 void makePayment(vector<Event>& events, vector<Ticket>& tickets, const string& username) {
     clearScreen();
-    cout << "\n=== Make Payment ===\n";
+    cout << "\n=== Make Payment ===\n\n";
     vector<int> unpaidIndexes;
+
+    // Print header
+    printPaymentLine();
+    cout << "| " << setw(3) << left << "No."
+        << " | " << setw(8) << left << "TicketID"
+        << " | " << setw(28) << left << "Event Name"
+        << " | " << setw(3) << left << "Qty"
+        << " | " << setw(13) << right << "Total (RM)"
+        << " | " << setw(8) << left << "Status" << " |\n";
+    printPaymentLine();
 
     // Show unpaid tickets
     for (int i = 0; i < tickets.size(); i++) {
         if (tickets[i].username == username && tickets[i].status == "Booked") {
             unpaidIndexes.push_back(i);
-            cout << unpaidIndexes.size() << ". Ticket ID: " << tickets[i].ticketID
-                << " | Event: " << tickets[i].eventName
-                << " | Qty: " << tickets[i].quantity
-                << " | Total: RM" << fixed << setprecision(2) << tickets[i].totalPrice
-                << " | Status: " << tickets[i].status << "\n";
+            cout << "| " << setw(3) << left << unpaidIndexes.size()
+                << " | " << setw(8) << left << tickets[i].ticketID
+                << " | " << setw(28) << left << tickets[i].eventName.substr(0, 28)
+                << " | " << setw(3) << left << tickets[i].quantity
+                << " | " << setw(13) << right << fixed << setprecision(2) << tickets[i].totalPrice
+                << " | " << setw(8) << left << tickets[i].status
+                << " |\n";
         }
     }
 
     if (unpaidIndexes.empty()) {
-        cout << "You have no unpaid bookings.\n";
+        cout << "| " << setw(78) << left << "You have no unpaid bookings."
+            << " |\n";
+        printPaymentLine();
+        pauseScreen();
         return;
     }
+
+    printPaymentLine();
 
     // Ask user to choose which ticket to pay for
     int selection;
@@ -148,35 +196,65 @@ void makePayment(vector<Event>& events, vector<Ticket>& tickets, const string& u
             }
         }
 
-        cout << "Payment successful! Ticket ID: " << tickets[ticketIndex].ticketID << " is now marked as PAID.\n";
+        cout << "\n Payment successful! Ticket ID: " << tickets[ticketIndex].ticketID << " is now marked as PAID.\n";
     }
     else {
-        cout << "Payment cancelled.\n";
+        cout << "\n Payment cancelled.\n";
     }
     pauseScreen();
 }
 
 void bookTickets(vector<Event>& events, vector<Ticket>& tickets, const string& username) {
     clearScreen();
-    cout << "\n=== Book Tickets ===\n";
+    //cout << "\n=== Book Tickets ===\n\n";
+    const int tableWidth = 140;
+    string title = "=== Book Tickets ===";
+    int padding = (tableWidth - (int)title.size()) / 2;
+    cout << string(padding, ' ') << title << "\n\n";
 
     vector<int> availableIndexes;
+
+    // Table header
+    printTableLine();
+    cout << "| " << setw(4) << left << "No."
+        << " | " << setw(28) << left << "Name"
+        << " | " << setw(15) << left << "Venue"
+        << " | " << setw(10) << left << "Date"
+        << " | " << setw(13) << left << "Time"
+        << " | " << setw(24) << left << "Organizer"
+        << " | " << setw(13) << right << "Price (RM)"
+        << " | " << setw(10) << right << "Tickets" << " |\n";
+    printTableLine();
+
+    // Print all available events in table
     for (int i = 0; i < events.size(); i++) {
         if (events[i].status == "Upcoming" && events[i].availableTickets > 0) {
             availableIndexes.push_back(i);
-            cout << availableIndexes.size() << ". "
-                << events[i].name << " (ID: " << events[i].id << ") | Date: " << events[i].date
-                << " | Venue: " << events[i].venue
-                << " | Price: RM" << fixed << setprecision(2) << events[i].ticketPrice
-                << " | Tickets Left: " << events[i].availableTickets << "\n";
+
+            string timeRange = events[i].startTime + " - " + events[i].endTime;
+
+            cout << "| " << setw(4) << left << availableIndexes.size()
+                << " | " << setw(28) << left << events[i].name.substr(0, 28)
+                << " | " << setw(15) << left << events[i].venue.substr(0, 15)
+                << " | " << setw(10) << left << events[i].date
+                << " | " << setw(13) << left << timeRange
+                << " | " << setw(24) << left << events[i].organizerName.substr(0, 24)
+                << " | " << setw(13) << right << fixed << setprecision(2) << events[i].ticketPrice
+                << " | " << setw(10) << right << events[i].availableTickets << " |\n";
         }
     }
 
     if (availableIndexes.empty()) {
-        cout << "No events available for booking.\n";
+        cout << "| " << setw(125) << left << "No events available for booking."
+            << " |\n";
+        printTableLine();
+        cout << "\n";
         return;
     }
 
+    printTableLine();
+
+    // Let user choose
     int selection;
     cout << "\nSelect the number of the event to book: ";
     cin >> selection;
@@ -217,35 +295,53 @@ void bookTickets(vector<Event>& events, vector<Ticket>& tickets, const string& u
 
     tickets.push_back(t);
 
-    cout << "\nBooking successful for event: " << events[index].name
-        << "\nTickets Booked: " << ticketsToBook
-        << "\nTotal Price: RM" << fixed << setprecision(2) << t.totalPrice
+    cout << "\n Booking successful for event: " << events[index].name
+        << "\n   Tickets Booked: " << ticketsToBook
+        << "\n   Total Price: RM" << fixed << setprecision(2) << t.totalPrice
         << "\n";
     pauseScreen();
 }
 
+void printBookingTableLine() {
+    cout << "+----------+------------------------------+----------+---------------+---------------+----------+\n";
+}
+
 void viewUserBookings(const vector<Ticket>& tickets, const string& username) {
     clearScreen();
-    cout << "\n=== My Bookings ===\n";
+    cout << "\n=== My Bookings ===\n\n";
+
     bool hasBookings = false;
 
+    // Table header
+    printBookingTableLine();
+    cout << "| " << setw(8) << left << "TicketID"
+        << " | " << setw(28) << left << "Event Name"
+        << " | " << setw(8) << left << "Qty"
+        << " | " << setw(13) << right << "Price (RM)"
+        << " | " << setw(13) << right << "Total (RM)"
+        << " | " << setw(8) << left << "Status" << " |\n";
+    printBookingTableLine();
+
+    // Table rows
     for (const auto& t : tickets) {
         if (t.username == username) {
             hasBookings = true;
-            cout << "\nTicket ID: " << t.ticketID
-                << "\nEvent Name: " << t.eventName
-                << "\nQuantity: " << t.quantity
-                << "\nPrice per Ticket: RM" << fixed << setprecision(2) << t.price
-                << "\nTotal Price: RM" << fixed << setprecision(2) << t.totalPrice
-                << "\nStatus: " << t.status
-                << "\n-----------------------------";
+            cout << "| " << setw(8) << left << t.ticketID
+                << " | " << setw(28) << left << t.eventName.substr(0, 28)
+                << " | " << setw(8) << left << t.quantity
+                << " | " << setw(13) << right << fixed << setprecision(2) << t.price
+                << " | " << setw(13) << right << fixed << setprecision(2) << t.totalPrice
+                << " | " << setw(8) << left << t.status
+                << " |\n";
         }
     }
 
     if (!hasBookings) {
-        cout << "You have no bookings yet.\n";
+        cout << "| " << setw(86) << left << "You have no bookings yet."
+            << " |\n";
     }
-    cout << "\n";
+
+    printBookingTableLine();
     pauseScreen();
 }
 
