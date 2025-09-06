@@ -9,6 +9,8 @@ using namespace std;
 
 vector<Equipment> equipmentList;
 
+bool isValidStageLocation(const string& location);
+
 void loadEquipmentFromFile() {
     ifstream file("equipment.txt");
     equipmentList.clear();

@@ -4,10 +4,11 @@
 #include <fstream>
 #include <sstream>
 #include <regex>
+#include <ctime>
+#include <iomanip>
 #include "events.h"
 #include "util.h"
 #include "stage.h"
-#include <iomanip>
 using namespace std;
 
 void eventMenu(const string& username);
@@ -477,21 +478,72 @@ void loadEventsFromFile(vector<Event>& events) {
 }
 
 bool isValidDate(const string& date) {
-	regex datePattern(R"(^([0-2][0-9]|3[01])-(0[1-9]|1[0-2])-(\d{4})$)");
-	if (!regex_match(date, datePattern)) return false;
+	// Expected format: DD-MM-YYYY
+	if (date.size() != 10 || date[2] != '-' || date[5] != '-') {
+		return false; // Wrong format
+	}
 
-	int day = stoi(date.substr(0, 2));
-	int month = stoi(date.substr(3, 2));
-	int year = stoi(date.substr(6, 4));
+	int day, month, year;
+	char dash1, dash2;
 
-	if (year < 1900 || year > 2100) return false;
+	stringstream ss(date);
+	ss >> day >> dash1 >> month >> dash2 >> year;
 
+	if (ss.fail() || dash1 != '-' || dash2 != '-') {
+		return false; // Invalid parsing
+	}
+
+	// Validate basic ranges
+	if (month < 1 || month > 12 || day < 1 || year < 1900) {
+		return false;
+	}
+
+	// Days in each month
 	int daysInMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-	if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))
+	// Leap year check for February
+	bool isLeap = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+	if (isLeap && month == 2) {
 		daysInMonth[1] = 29;
+	}
 
-	return day >= 1 && day <= daysInMonth[month - 1];
+	if (day > daysInMonth[month - 1]) {
+		return false;
+	}
+
+	// Get today's date
+	time_t t = time(0);
+	tm today{};
+	localtime_s(&today, &t);
+
+	int currentYear = today.tm_year + 1900;
+	int currentMonth = today.tm_mon + 1;
+	int currentDay = today.tm_mday;
+
+	// Convert both dates to "days since epoch" for comparison
+	tm selectedDate{};
+	selectedDate.tm_year = year - 1900;
+	selectedDate.tm_mon = month - 1;
+	selectedDate.tm_mday = day;
+
+	time_t selectedTime = mktime(&selectedDate);
+	time_t todayTime = mktime(&today);
+
+	// Past dates are invalid
+	if (difftime(selectedTime, todayTime) < 0) {
+		return false;
+	}
+
+	// Limit booking up to 1 year ahead (customizable)
+	tm oneYearLater = today;
+	oneYearLater.tm_year += 1;
+	time_t oneYearLaterTime = mktime(&oneYearLater);
+
+	if (difftime(selectedTime, oneYearLaterTime) > 0) {
+		return false;
+	}
+
+	return true;
 }
 
 bool isValidTime(const string& time) {
