@@ -3,9 +3,10 @@ Speaker, 10, Stage1, In Use
 Microphone, 15, Storage, Available
 Laptop, 8, Stage2, In Use
 Lighting Rig, 3, Storage, Under Repair
-Camera, 6, Stage1, Available
+Camera, 3, Stage1, Available
 Walkie Talkie, 20, Storage, Available
 Stage Backdrop, 2, Stage2, Damaged
 Sound Mixer, 4, Storage, Available
 LED Screen, 3, Stage3, In Use
 1231231, 0, Storage, Available
+Camera, 3, Storage, Available
