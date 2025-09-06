@@ -1,12 +1,13 @@
-Projector, 5, Storage, Available
-Speaker, 10, Stage1, In Use
-Microphone, 15, Storage, Available
+Projector, 5, Storage, In Storage
+Microphone, 15, Storage, In Storage
 Laptop, 8, Stage2, In Use
-Lighting Rig, 3, Storage, Under Repair
+Lighting Rig, 3, Storage, In Storage
 Camera, 3, Stage1, Available
-Walkie Talkie, 20, Storage, Available
-Stage Backdrop, 2, Stage2, Damaged
-Sound Mixer, 4, Storage, Available
+Walkie Talkie, 20, Storage, In Storage
+Stage Backdrop, 2, Stage2, Availble
+Sound Mixer, 4, Storage, In Storage
 LED Screen, 3, Stage3, In Use
-1231231, 0, Storage, Available
-Camera, 3, Storage, Available
+Camera, 3, Storage, In Storage
+Audio Interface, 2, Store Room, In Storage
+Speaker, 5, Store Room, In Storage
+Speaker, 5, Stage1, Available

@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <iomanip>
+#include <algorithm>
 using namespace std;
 
 vector<Equipment> equipmentList;
@@ -37,7 +38,6 @@ void loadEquipmentFromFile() {
 
             try {
                 int quantity = quantityStr.empty() ? 0 : stoi(quantityStr);
-                if (status.empty()) status = "Available"; // default
                 equipmentList.push_back(Equipment(name, quantity, location, status));
             }
             catch (...) {
@@ -62,27 +62,64 @@ void saveEquipmentToFile() {
 }
 
 void displayAllEquipment() {
-    cout << "\n===== EQUIPMENT INVENTORY =====\n";
-    cout << left << setw(5) << "No."
-        << setw(20) << "Equipment Name"
-        << setw(10) << "Quantity"
-        << setw(15) << "Location"
-        << "Status\n";
-    cout << "-------------------------------------------------------------\n";
+    system("cls");
+    cout << endl;
+
+    string title = " EQUIPMENT INVENTORY ";
+    int totalWidth = 85;
+    int sideWidth = static_cast<int>((totalWidth - title.size()) / 2);
+
+    cout << string(sideWidth, '=') << title << string(totalWidth - sideWidth - title.size(), '=') << endl;
+    cout << endl;
 
     if (equipmentList.empty()) {
         cout << "No equipment in inventory.\n";
         return;
     }
 
+    // Top border
+    cout << "+" << string(5, '-') << "+" << string(20, '-') << "+" << string(10, '-')
+        << "+" << string(27, '-') << "+" << string(15, '-') << "+" << endl;
+
+    // Header row
+    cout << "|" << left << setw(5) << "No." << "|"
+        << setw(20) << "Equipment Name" << "|"
+        << setw(10) << "Quantity" << "|"
+        << setw(27) << "Location" << "|"
+        << setw(15) << "Status" << "|" << endl;
+
+    // Header separator
+    cout << "+" << string(5, '-') << "+" << string(20, '-') << "+" << string(10, '-')
+        << "+" << string(27, '-') << "+" << string(15, '-') << "+" << endl;
+
+    // Data rows
     int index = 1;
     for (const auto& eq : equipmentList) {
-        cout << left << setw(5) << index++
-            << setw(20) << eq.name
-            << setw(10) << eq.quantity
-            << setw(15) << eq.location
-            << eq.status << endl;
+        string displayStatus = eq.status;
+        if (eq.location == "Store Room") {
+            displayStatus = "In Storage";
+        }
+
+        cout << "|" << left << setw(5) << index++ << "|"
+            << setw(20) << eq.name << "|"
+            << setw(10) << eq.quantity << "|"
+            << setw(27) << eq.location << "|"
+            << setw(15) << displayStatus << "|" << endl;
     }
+
+    // Bottom border
+    cout << "+" << string(5, '-') << "+" << string(20, '-') << "+" << string(10, '-')
+        << "+" << string(27, '-') << "+" << string(15, '-') << "+" << endl;
+}
+
+bool isValidStageLocation(const string& location) {
+    if (location == "Store Room") return true;
+
+    if (location.rfind("Stage", 0) == 0) {
+        string numPart = location.substr(5);
+        return !numPart.empty() && all_of(numPart.begin(), numPart.end(), ::isdigit);
+    }
+    return false;
 }
 
 void addEquipment() {
@@ -96,7 +133,7 @@ void addEquipment() {
 
         bool valid = !name.empty();
         for (char c : name) {
-            if (!isalpha(c) && c != ' ') { // allow letters and spaces only
+            if (!isalpha(c) && c != ' ') {
                 valid = false;
                 break;
             }
@@ -135,52 +172,51 @@ void addEquipment() {
         break;
     }
 
-    // Validate location (must be Storage or StageX)
+    // Validate location (only StageX or Store Room allowed)
     while (true) {
-        cout << "Enter location (Storage or Stage ID like Stage1): ";
+        cout << "Enter location (Stage1, Stage2, ... or 'Store Room'): ";
         getline(cin, location);
 
-        if (location.empty()) {
-            location = "Storage"; // default
-            break; // exit loop
+        // Convert to proper case
+        if (location == "store room" || location == "STOREROOM" || location == "storage") {
+            location = "Store Room";
         }
-
-        // normalize short form S1 to Stage1
-        if ((location[0] == 'S' || location[0] == 's') && location.size() > 1 && isdigit(location[1])) {
-            location = "Stage" + location.substr(1);
-        }
-
-        // check if it's exactly "Storage"
-        if (location == "Storage") {
-            break; // valid then exit loop
-        }
-
-        // check if its StageX with numeric part
-        if (location.rfind("Stage", 0) == 0) { // starts with "Stage"
-            string numPart = location.substr(5);
-            bool validNum = !numPart.empty();
-            for (char c : numPart) {
-                if (!isdigit(c)) { validNum = false; break; }
+        else if ((location[0] == 'S' || location[0] == 's') && location.size() > 1) {
+            // Handle StageX format
+            if (isdigit(location[1])) {
+                location = "Stage" + location.substr(1);
             }
-            if (validNum) {
-                break; // valid ? exit loop
+            else if (location.substr(0, 5) == "stage" || location.substr(0, 5) == "STAGE") {
+                location[0] = 'S';
+                for (size_t i = 1; i < location.size(); i++) {
+                    location[i] = tolower(location[i]);
+                }
             }
         }
 
-        cout << "Invalid location! Please enter 'Storage' or 'StageX' (e.g., Stage1, Stage2).\n";
+        if (isValidStageLocation(location)) {
+            break;
+        }
+
+        cout << "Invalid location! Please enter 'Store Room' or 'StageX' (e.g., Stage1, Stage2).\n";
     }
 
     bool found = false;
     for (auto& eq : equipmentList) {
         if (eq.name == name && eq.location == location) {
             eq.quantity += quantity;
+            // If adding to Store Room, set status to "In Storage"
+            if (location == "Store Room") {
+                eq.status = "In Storage";
+            }
             found = true;
             break;
         }
     }
 
     if (!found) {
-        equipmentList.push_back(Equipment(name, quantity, location, "Available"));
+        string status = (location == "Store Room") ? "In Storage" : "Available";
+        equipmentList.push_back(Equipment(name, quantity, location, status));
     }
 
     saveEquipmentToFile();
@@ -200,7 +236,7 @@ void removeEquipment() {
     cout << "\nEnter equipment name to remove: ";
     getline(cin, name);
 
-    cout << "Enter location (Storage or stage ID): ";
+    cout << "Enter location (StageX or Store Room): ";
     getline(cin, location);
 
     cout << "Enter quantity to remove: ";
@@ -241,12 +277,52 @@ void transferEquipment() {
     cout << "Enter current location: ";
     getline(cin, fromLocation);
 
-    cout << "Enter quantity to transfer: ";
-    cin >> quantity;
-    cin.ignore();
+    // Validate quantity input
+    while (true) {
+        cout << "Enter quantity to transfer: ";
+        string quantityStr;
+        getline(cin, quantityStr);
 
-    cout << "Enter destination (Storage or stage ID): ";
-    getline(cin, toLocation);
+        try {
+            quantity = stoi(quantityStr);
+            if (quantity <= 0) {
+                cout << "Quantity must be greater than 0.\n";
+                continue;
+            }
+            break;
+        }
+        catch (const exception& e) {
+            cout << "Invalid input! Please enter a valid number.\n";
+        }
+    }
+
+    // Validate destination location
+    while (true) {
+        cout << "Enter destination (StageX or Store Room): ";
+        getline(cin, toLocation);
+
+        // Convert to proper case
+        if (toLocation == "store room" || toLocation == "STOREROOM" || toLocation == "storage") {
+            toLocation = "Store Room";
+        }
+        else if ((toLocation[0] == 'S' || toLocation[0] == 's') && toLocation.size() > 1) {
+            if (isdigit(toLocation[1])) {
+                toLocation = "Stage" + toLocation.substr(1);
+            }
+            else if (toLocation.substr(0, 5) == "stage" || toLocation.substr(0, 5) == "STAGE") {
+                toLocation[0] = 'S';
+                for (size_t i = 1; i < toLocation.size(); i++) {
+                    toLocation[i] = tolower(toLocation[i]);
+                }
+            }
+        }
+
+        if (isValidStageLocation(toLocation)) {
+            break;
+        }
+
+        cout << "Invalid location! Please enter 'Store Room' or 'StageX' (e.g., Stage1, Stage2).\n";
+    }
 
     Equipment* sourceEq = nullptr;
     for (auto& eq : equipmentList) {
@@ -256,8 +332,13 @@ void transferEquipment() {
         }
     }
 
-    if (!sourceEq || sourceEq->quantity < quantity) {
-        cout << "Not enough equipment available for transfer!\n";
+    if (!sourceEq) {
+        cout << "Equipment not found at the specified location!\n";
+        return;
+    }
+
+    if (sourceEq->quantity < quantity) {
+        cout << "Not enough equipment available for transfer! Only " << sourceEq->quantity << " available.\n";
         return;
     }
 
@@ -271,17 +352,32 @@ void transferEquipment() {
 
     sourceEq->quantity -= quantity;
 
+    if (sourceEq->quantity == 0) {
+        // Remove the source equipment if quantity becomes zero
+        equipmentList.erase(remove_if(equipmentList.begin(), equipmentList.end(),
+            [&](const Equipment& eq) {
+                return eq.name == name && eq.location == fromLocation;
+            }), equipmentList.end());
+    }
+
     if (destEq) {
         destEq->quantity += quantity;
+        // Update status based on destination
+        if (toLocation == "Store Room") {
+            destEq->status = "In Storage";
+        }
+        else if (destEq->status == "In Storage") {
+            destEq->status = "Available";
+        }
     }
     else {
-        equipmentList.push_back(Equipment(name, quantity, toLocation, "Available"));
+        string status = (toLocation == "Store Room") ? "In Storage" : "Available";
+        equipmentList.push_back(Equipment(name, quantity, toLocation, status));
     }
 
     saveEquipmentToFile();
     cout << "Equipment transferred successfully!\n";
 }
-
 void updateEquipmentStatus() {
     displayAllEquipment();
     if (equipmentList.empty()) return;
@@ -291,14 +387,26 @@ void updateEquipmentStatus() {
     getline(cin, name);
     cout << "Enter location: ";
     getline(cin, location);
+
+    // Don't allow status change for equipment in Store Room
+    if (location == "Store Room") {
+        cout << "Cannot change status of equipment in Store Room. Status is always 'In Storage'.\n";
+        return;
+    }
+
     cout << "Enter new status (Available / In Use / Damaged / Under Repair): ";
     getline(cin, newStatus);
 
     for (auto& eq : equipmentList) {
         if (eq.name == name && eq.location == location) {
-            eq.status = newStatus;
-            saveEquipmentToFile();
-            cout << "Status updated successfully!\n";
+            if (location != "Store Room") {
+                eq.status = newStatus;
+                saveEquipmentToFile();
+                cout << "Status updated successfully!\n";
+            }
+            else {
+                cout << "Cannot change status of equipment in Store Room.\n";
+            }
             return;
         }
     }

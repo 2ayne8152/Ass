@@ -28,4 +28,4 @@ void displayAllStages();
 void assignEventToStage();
 void updateStageStatus();
 bool eventExists(const std::string& eventName);
-bool isValidEventName(const string& event);
+//bool isValidEventName(const string& event);

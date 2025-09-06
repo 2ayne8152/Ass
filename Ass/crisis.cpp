@@ -10,7 +10,7 @@ using namespace std;
 
 vector<Stage> stages;
 void equipmentMenu();
-bool isValidEventName(const string& event);
+//bool isValidEventName(const string& event);
 bool eventExists(const string& eventName);
 
 void loadStagesFromFile() {
@@ -115,7 +115,7 @@ void displayAllStages() {
     cout << endl;
 
     string title = " ALL VENUE STAGES ";
-    int totalWidth = 86;
+    int totalWidth = 110; 
     int sideWidth = static_cast<int>((totalWidth - title.size()) / 2);
 
     cout << string(sideWidth, '=') << title << string(totalWidth - sideWidth - title.size(), '=') << endl;
@@ -126,28 +126,40 @@ void displayAllStages() {
         return;
     }
 
-    cout << left
-        << setw(5) << "No."
-        << setw(8) << "ID"
-        << setw(18) << "Stage Name"
-        << setw(9) << "Capacity"
-        << setw(12) << "Status"
-        << setw(15) << "Current Event"
-        << setw(15) << "Price/Day" << endl;
+    // Top border
+    cout << "+" << string(5, '-') << "+" << string(8, '-') << "+" << string(18, '-')
+        << "+" << string(9, '-') << "+" << string(12, '-') << "+" << string(27, '-')
+        << "+" << string(15, '-') << "+" << endl;
 
-    cout << string(totalWidth, '-') << endl;
+    // Header row
+    cout << "|" << left << setw(5) << "No." << "|"
+        << setw(8) << "ID" << "|"
+        << setw(18) << "Stage Name" << "|"
+        << setw(9) << "Capacity" << "|"
+        << setw(12) << "Status" << "|"
+        << setw(27) << "Current Event" << "|"  
+        << setw(15) << "Price/Day" << "|" << endl;
 
+    // Header separator
+    cout << "+" << string(5, '-') << "+" << string(8, '-') << "+" << string(18, '-')
+        << "+" << string(9, '-') << "+" << string(12, '-') << "+" << string(27, '-')
+        << "+" << string(15, '-') << "+" << endl;
+
+    // Data rows
     for (size_t i = 0; i < stages.size(); i++) {
-        cout << left
-            << setw(5) << (i + 1)
-            << setw(9) << stages[i].stageNumber
-            << setw(18) << stages[i].stageName
-            << setw(8) << stages[i].capacity
-            << setw(12) << (stages[i].isOperational ? "Operational" : "BROKEN")
-            << setw(15) << (stages[i].currentEvent.empty() ? "Available" : stages[i].currentEvent)
-            << setw(15) << fixed << setprecision(2) << stages[i].pricePerDay
-            << endl;
+        cout << "|" << left << setw(5) << (i + 1) << "|"
+            << setw(8) << stages[i].stageNumber << "|"
+            << setw(18) << stages[i].stageName << "|"
+            << setw(9) << stages[i].capacity << "|"
+            << setw(12) << (stages[i].isOperational ? "Operational" : "BROKEN") << "|"
+            << setw(27) << (stages[i].currentEvent.empty() ? "Available" : stages[i].currentEvent) << "|"  // Changed to 27
+            << setw(15) << fixed << setprecision(2) << stages[i].pricePerDay << "|" << endl;
     }
+
+    // Bottom border
+    cout << "+" << string(5, '-') << "+" << string(8, '-') << "+" << string(18, '-')
+        << "+" << string(9, '-') << "+" << string(12, '-') << "+" << string(27, '-')
+        << "+" << string(15, '-') << "+" << endl;
 }
 
 void assignEventToStage() {
@@ -198,10 +210,10 @@ void assignEventToStage() {
             return;
         }
 
-        if (!isValidEventName(eventName)) {
+       /* if (!isValidEventName(eventName)) {
             cout << "Invalid event name. Must be more than 3 and no more than 15 characters.\n";
             continue;
-        }
+        }*/
         if (!eventExists(eventName)) {
             cout << "Event doesn't exist. Please enter again.\n";
             continue;

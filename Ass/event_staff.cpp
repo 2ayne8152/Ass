@@ -29,9 +29,9 @@ bool validateShiftFormat(const string& shiftTime) {
     return regex_match(shiftTime, pattern);
 }
 
-bool isValidEventName(const string& event) {
-    return event.length() > 3 && event.length() <= 15;
-}
+//bool isValidEventName(const string& event) {
+//    return event.length() > 3 && event.length() <= 15;
+//}
 
 bool eventExists(const string& eventName) {
     ifstream file("events.txt");
@@ -180,38 +180,51 @@ void displayAllEventStaff(const vector<EventStaff>& staffList) {
     cout << endl;
 
     string title = " ALL EVENT STAFF ";
-    int totalWidth = 95;
+    int totalWidth = 97;
     int sideWidth = (totalWidth - title.size()) / 2;
 
     cout << string(sideWidth, '=') << title << string(totalWidth - sideWidth - title.size(), '=') << endl;
     cout << endl;
+
     if (staffList.empty()) {
         cout << "No event staff members found.\n";
         return;
     }
 
-    cout << left
-        << setw(5) << "No."
-        << setw(10) << "ID"
-        << setw(20) << "Name"
-        << setw(15) << "Role"
-        << setw(15) << "Contact"
-        << setw(15) << "Event"
-        << setw(15) << "Shift" << endl;
+    // Top border
+    cout << "+" << string(5, '-') << "+" << string(10, '-') << "+" << string(20, '-')
+        << "+" << string(15, '-') << "+" << string(15, '-') << "+" << string(27, '-')
+        << "+" << string(15, '-') << "+" << endl;
 
-    cout << string(totalWidth, '-') << endl;
+    // Header row
+    cout << "|" << left << setw(5) << "No." << "|"
+        << setw(10) << "ID" << "|"
+        << setw(20) << "Name" << "|"
+        << setw(15) << "Role" << "|"
+        << setw(15) << "Contact" << "|"
+        << setw(27) << "Event" << "|"
+        << setw(15) << "Shift" << "|" << endl;
 
+    // Header separator
+    cout << "+" << string(5, '-') << "+" << string(10, '-') << "+" << string(20, '-')
+        << "+" << string(15, '-') << "+" << string(15, '-') << "+" << string(27, '-')
+        << "+" << string(15, '-') << "+" << endl;
+
+    // Data rows
     for (size_t i = 0; i < staffList.size(); i++) {
-        cout << left
-            << setw(5) << (i + 1)
-            << setw(10) << staffList[i].staffId
-            << setw(20) << fitToWidth(staffList[i].name, 20)
-            << setw(15) << fitToWidth(staffList[i].role, 15)
-            << setw(15) << staffList[i].contactInfo
-            << setw(15) << staffList[i].assignedEvent
-            << setw(15) << staffList[i].shiftTime
-            << endl;
+        cout << "|" << left << setw(5) << (i + 1) << "|"
+            << setw(10) << staffList[i].staffId << "|"
+            << setw(20) << fitToWidth(staffList[i].name, 20) << "|"
+            << setw(15) << fitToWidth(staffList[i].role, 15) << "|"
+            << setw(15) << staffList[i].contactInfo << "|"
+            << setw(27) << fitToWidth(staffList[i].assignedEvent, 27) << "|"
+            << setw(15) << staffList[i].shiftTime << "|" << endl;
     }
+
+    // Bottom border
+    cout << "+" << string(5, '-') << "+" << string(10, '-') << "+" << string(20, '-')
+        << "+" << string(15, '-') << "+" << string(15, '-') << "+" << string(27, '-')
+        << "+" << string(15, '-') << "+" << endl;
 }
 
 void displayEventStaffForEvent(const vector<EventStaff>& staffList, const string& eventName) {
@@ -277,10 +290,7 @@ void addEventStaffFromInput(vector<EventStaff>& staffList) {
             return;
         }
 
-        if (!isValidEventName(event)) {
-            cout << "Invalid event name. Must be more than 3 and no more than 15 characters.\n";
-            continue;
-        }
+    
         if (!eventExists(event)) {
             cout << "Event doesn't exist. Please enter again.\n";
             continue;
@@ -355,6 +365,42 @@ void searchStaffById(const vector<EventStaff>& staffList) {
     }
 }
 
+void updateStaffEventFromInput(vector<EventStaff>& staffList) {
+    if (staffList.empty()) {
+        cout << "No event staff available to update.\n";
+        return;
+    }
+
+    string staffId;
+    cout << "Enter Staff ID to update: ";
+    getline(cin, staffId);
+
+    bool found = false;
+    for (auto& staff : staffList) {
+        if (staff.staffId == staffId) {
+            cout << "Current Event: " << staff.assignedEvent << endl;
+
+            string newEvent;
+            cout << "Enter New Event: ";
+            getline(cin, newEvent);
+
+            if (!eventExists(newEvent)) {
+                cout << "Error: Event \"" << newEvent << "\" does not exist in events.txt.\n";
+                return;
+            }
+
+            staff.assignedEvent = newEvent;
+            cout << "Event updated successfully for Staff ID: " << staffId << "\n";
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        cout << "Staff with ID " << staffId << " not found.\n";
+    }
+}
+
 void manageEventStaffMenu(const vector<EventStaff>& staffList) {
     int choice;
     string input;
@@ -368,7 +414,8 @@ void manageEventStaffMenu(const vector<EventStaff>& staffList) {
         cout << "3. Remove Event Staff\n";
         cout << "4. View Staff for Specific Event\n";
         cout << "5. Search Staff by ID\n";
-        cout << "6. Back to Main Menu\n";
+        cout << "6. Update Staff Event\n";  
+        cout << "7. Back to Main Menu\n";
         cout << "Choose an option: ";
 
         getline(cin, input);
@@ -398,6 +445,10 @@ void manageEventStaffMenu(const vector<EventStaff>& staffList) {
             searchStaffById(workingList);
             break;
         case 6:
+            updateStaffEventFromInput(workingList);
+            saveEventStaff(workingList);
+            break;
+        case 7:
             system("cls");
             cout << "Returning to main menu...\n";
             return;
