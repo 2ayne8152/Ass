@@ -39,5 +39,6 @@ void displayEventStaffForEvent(const vector<EventStaff>& staffList, const string
 void manageEventStaffMenu(const vector<EventStaff>& staffList);
 
 string generateNextStaffId(const std::vector<EventStaff>& staffList);
+void addEventStaffFromInput(vector<EventStaff>& staffList);
 
 #endif 

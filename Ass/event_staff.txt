@@ -12,4 +12,4 @@ ES0011,Karen,Ticketing Staff,017-2233445,Metal Storm Festival,17:00->00:30
 ES0012,Raj,Sound Technician,018-6677889,Summer Reggae Vibes,16:00->23:30
 ES0013,Chloe,VIP Attendant,016-1122334,Exclusive DJ VIP Night,21:00->02:30
 ES0014,Marcus,Photographer,019-3344556,Rock Legends Reunion,17:00->22:30
-ES0015,Fatima,Stage Manager,013-2233445,Golden Strings,18:00->22:30
+ES0015,Fatima,Stage Manager,013-2233445,Golden Strings,09:00->17:30
