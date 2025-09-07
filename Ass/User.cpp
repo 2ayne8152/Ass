@@ -21,6 +21,7 @@ const string EVENTS_FILE = "events.txt";
 const string TICKETS_FILE = "tickets.txt";
 
 void userMainMenu(const string& username) {
+
     vector<Event> events;
     vector<Ticket> tickets;
 
@@ -30,6 +31,7 @@ void userMainMenu(const string& username) {
     bool condition = true;
 
     do {
+        clearScreen();
         cout << "\n==== Ticket Booking Menu ====\n";
         cout << "1. View Available Events\n";
         cout << "2. Book Tickets\n";
@@ -61,7 +63,7 @@ void userMainMenu(const string& username) {
             break;
         case 5:
             condition = false;
-			clearScreen();
+            clearScreen();
             return;
         }
     } while (condition);
