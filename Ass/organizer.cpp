@@ -1,12 +1,14 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include "util.h"
 using namespace std;
 
 
 void eventMenu(const string& username);
 
 void organizerMainMenu(const string& username) {
+    clearScreen();
 	cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear input buffer
     int choice;
     string input;
