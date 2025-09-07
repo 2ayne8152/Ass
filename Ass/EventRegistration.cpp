@@ -99,6 +99,7 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 	for (size_t i = 0; i < stages.size(); ++i) {
 		cout << i + 1 << ". " << stages[i].stageName
 			<< " (Capacity: " << stages[i].capacity
+			<< ", Price/Day: RM" << fixed << setprecision(2) << stages[i].pricePerDay
 			<< ", Status: " << (stages[i].isOperational ? "Operational" : "Not Operational") << ")\n";
 		if (stages[i].isOperational) operationalStages.push_back(i);
 	}
@@ -131,6 +132,7 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 
 	string venue = stages[stageChoice - 1].stageName;
 	availableTickets = stages[stageChoice - 1].capacity;
+	double venueFee = stages[stageChoice - 1].pricePerDay;
 
 	// Input Date
 	do {
@@ -170,7 +172,7 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 		break;
 	} while (true);
 
-	// Conflict check (unchanged)
+	// Conflict check
 	bool conflict = false;
 	for (const auto& e : events) {
 		if (e.venue == venue && e.date == date) {
@@ -190,9 +192,9 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 
 	if (conflict) {
 		clearScreen();
-		cout << "+-----------------------------+\n";
+		cout << "+------------------------------+\n";
 		cout << "| Scheduling conflict detected |\n";
-		cout << "+-----------------------------+\n";
+		cout << "+------------------------------+\n";
 		pauseScreen();
 		return;
 	}
@@ -216,13 +218,15 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 		}
 	} while (ticketPrice <= 0);
 
-	// Save Event
-	events.emplace_back(id, name, venue, date, startTime, endTime,
-		"Upcoming", username, ticketPrice, availableTickets);
+	events.emplace_back(
+		id, name, venue, date, startTime, endTime,
+		"Upcoming", venueFee, username, ticketPrice, availableTickets
+	);
 
 	cout << "\nEvent created successfully!\n";
 	pauseScreen();
 }
+
 
 void printLine(const vector<int>& widths) {
 	cout << "+";
@@ -286,11 +290,11 @@ void makePayment(vector<Event>& events, const string& username) {
 
 	bool hasUnpaid = false;
 
-	// Adjusted column widths (Organizer included for consistency)
-	vector<int> widths = { 5, 15, 15, 12, 12, 12, 10, 12, 12, 15 };
+	// Column widths aligned with headers
+	vector<int> widths = { 5, 15, 15, 12, 15, 12, 12, 15 };
 	vector<string> headers = {
 		"ID", "Name", "Venue", "Date", "Time",
-		"Status", "Payment", "Price(RM)", "Tickets", "Organizer"
+		"Status", "Payment", "Venue Fee(RM)"
 	};
 
 	// Print header
@@ -313,9 +317,7 @@ void makePayment(vector<Event>& events, const string& username) {
 				<< " | " << setw(widths[4]) << (e.startTime + "-" + e.endTime)
 				<< " | " << setw(widths[5]) << e.status
 				<< " | " << setw(widths[6]) << e.paymentStatus
-				<< " | " << setw(widths[7]) << fixed << setprecision(2) << e.ticketPrice
-				<< " | " << setw(widths[8]) << e.availableTickets
-				<< " | " << setw(widths[9]) << e.organizerName
+				<< " | " << setw(widths[7]) << fixed << setprecision(2) << e.venueFee
 				<< " |\n";
 			printLine(widths);
 		}
