@@ -179,6 +179,7 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 	}
 
 	if (conflict) {
+		clearScreen();
 		cout << "+-----------------------------+" << endl;
 		cout << "|Scheduling conflict detected!|" << endl;
 		cout << "|The selected stage is already|" << endl;
