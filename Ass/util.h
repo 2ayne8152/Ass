@@ -9,11 +9,7 @@
 using namespace std;
 
 inline void clearScreen() {
-#ifdef _WIN32
-    system("cls");   // Windows
-#else
-    system("clear"); // Linux/Mac
-#endif
+    system("cls");   
 }
 
 inline void pauseScreen() {

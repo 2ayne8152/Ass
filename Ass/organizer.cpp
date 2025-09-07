@@ -8,12 +8,12 @@ using namespace std;
 void eventMenu(const string& username);
 
 void organizerMainMenu(const string& username) {
-    clearScreen();
 	cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear input buffer
     int choice;
     string input;
 
     while (true) {
+		clearScreen();
         cout << "\n===== ORGANIZER MENU =====\n";
         cout << "Welcome, " << username << "!\n\n";
         cout << "1. Manage My Events\n";

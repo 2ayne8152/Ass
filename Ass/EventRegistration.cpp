@@ -81,12 +81,13 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 	int availableTickets;
 	int id = events.size() + 1;
 
-	cout << "\n=== Create New Event ===\n";
+	cout << "\n=== Create New Event (Enter Q anytime to cancel) ===\n";
 
 	// Input Event Name
 	do {
 		cout << "Enter Event Name: ";
 		getline(cin, name);
+		if (name == "Q" || name == "q") return;
 		if (name.empty()) cout << "Event name cannot be empty!\n";
 	} while (name.empty());
 
@@ -108,43 +109,49 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 	// Stage Selection
 	int stageChoice;
 	do {
-		cout << "Select a stage by number: ";
-		cin >> stageChoice;
+		cout << "Select a stage by number (Q to cancel): ";
+		string input;
+		getline(cin, input);
+		if (input == "Q" || input == "q") return;
 
-		if (cin.fail() || stageChoice < 1 || stageChoice >(int)stages.size()) {
-			cin.clear();
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-			cout << "Invalid selection! Please choose a valid stage.\n";
+		try {
+			stageChoice = stoi(input);
 		}
-		else if (!stages[stageChoice - 1].isOperational) {
-			cout << " This stage is not operational. Please select another one.\n";
+		catch (...) {
 			stageChoice = -1;
 		}
-	} while (stageChoice < 1 || stageChoice >(int)stages.size());
+
+		if (stageChoice < 1 || stageChoice >(int)stages.size() || !stages[stageChoice - 1].isOperational) {
+			cout << "Invalid selection! Please choose a valid stage.\n";
+			stageChoice = -1;
+		}
+	} while (stageChoice < 1);
 
 	string venue = stages[stageChoice - 1].stageName;
 	availableTickets = stages[stageChoice - 1].capacity;
 
-	cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
 	// Input Date
 	do {
-		cout << "Enter Date (DD-MM-YYYY): ";
+		cout << "\nEnter Date (DD-MM-YYYY, Q to cancel): ";
 		getline(cin, date);
+		if (date == "Q" || date == "q") return;
 		if (!isValidDate(date)) cout << "Invalid date format or out-of-range date. Please retry.\n";
 	} while (!isValidDate(date));
 
 	// Input Start Time
 	do {
-		cout << "Enter Start Time (HH:MM): ";
+		cout << "\nEnter Start Time (HH:MM, Q to cancel): ";
 		getline(cin, startTime);
+		if (startTime == "Q" || startTime == "q") return;
 		if (!isValidTime(startTime)) cout << "Invalid start time. Use 24-hour format (HH:MM).\n";
 	} while (!isValidTime(startTime));
 
 	// Input End Time
 	do {
-		cout << "Enter End Time (HH:MM): ";
+		cout << "Enter End Time (HH:MM, Q to cancel): ";
 		getline(cin, endTime);
+		if (endTime == "Q" || endTime == "q") return;
+
 		if (!isValidTime(endTime)) {
 			cout << "Invalid end time. Use 24-hour format (HH:MM).\n";
 			continue;
@@ -161,6 +168,7 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 		break;
 	} while (true);
 
+	// Conflict check (unchanged)
 	bool conflict = false;
 	for (const auto& e : events) {
 		if (e.venue == venue && e.date == date) {
@@ -180,122 +188,179 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 
 	if (conflict) {
 		clearScreen();
-		cout << "+-----------------------------+" << endl;
-		cout << "|Scheduling conflict detected!|" << endl;
-		cout << "|The selected stage is already|" << endl;
-		cout << "|booked for the chosen date   |" << endl;
-		cout << "|and time.                    |" << endl;
-		cout << "+-----------------------------+" << endl;
+		cout << "+-----------------------------+\n";
+		cout << "| Scheduling conflict detected |\n";
+		cout << "+-----------------------------+\n";
 		pauseScreen();
 		return;
 	}
 
-	// Input Ticket Price
+	// Ticket Price
 	do {
-		cout << "Enter Ticket Price (RM): ";
-		cin >> ticketPrice;
-		if (cin.fail() || ticketPrice <= 0) {
-			cin.clear();
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		cout << "\nEnter Ticket Price (RM, Q to cancel): ";
+		string input;
+		getline(cin, input);
+		if (input == "Q" || input == "q") return;
+
+		try {
+			ticketPrice = stod(input);
+		}
+		catch (...) {
+			ticketPrice = -1;
+		}
+
+		if (ticketPrice <= 0) {
 			cout << "Invalid price! Please enter a positive number.\n";
 		}
 	} while (ticketPrice <= 0);
 
 	// Save Event
-	events.emplace_back(
-		id,
-		name,
-		venue,
-		date,
-		startTime,
-		endTime,
-		"Upcoming",
-		username,
-		ticketPrice,
-		availableTickets
-	);
+	events.emplace_back(id, name, venue, date, startTime, endTime,
+		"Upcoming", username, ticketPrice, availableTickets);
 
 	cout << "\nEvent created successfully!\n";
-	cout << "Venue: " << venue << " | Tickets Available: " << availableTickets << "\n";
 	pauseScreen();
+}
+
+void printLine(const vector<int>& widths) {
+	cout << "+";
+	for (int w : widths) {
+		cout << string(w + 2, '-') << "+";
+	}
+	cout << "\n";
 }
 
 void viewEvents(const vector<Event>& events, const string& username) {
 	clearScreen();
 	cout << "\n=== Your Booking History ===\n";
+
 	bool hasEvents = false;
+
+	// Adjusted column widths (Organizer widened)
+	vector<int> widths = { 5, 15, 15, 12, 12, 12, 10, 12, 12, 15 };
+	vector<string> headers = {
+		"ID", "Name", "Venue", "Date", "Time",
+		"Status", "Payment", "Price(RM)", "Tickets", "Organizer"
+	};
+
+	// Print header
+	printLine(widths);
+	cout << "|";
+	for (size_t i = 0; i < headers.size(); i++) {
+		cout << " " << left << setw(widths[i]) << headers[i] << " |";
+	}
+	cout << "\n";
+	printLine(widths);
 
 	for (const auto& e : events) {
 		if (e.organizerName == username) {
 			hasEvents = true;
-			cout << "\nEvent ID: " << e.id
-				<< "\nName: " << e.name
-				<< "\nVenue: " << e.venue
-				<< "\nDate: " << e.date
-				<< "\nTime: " << e.startTime << " - " << e.endTime
-				<< "\nOrganizer: " << e.organizerName
-				<< "\nStatus: " << e.status
-				<< "\nPayment Status: " << e.paymentStatus
-				<< "\nTicket Price: RM" << fixed << setprecision(2) << e.ticketPrice
-				<< "\nAvailable Tickets: " << e.availableTickets
-				<< "\n-----------------------------";
+			cout << "| " << left << setw(widths[0]) << e.id
+				<< " | " << setw(widths[1]) << e.name
+				<< " | " << setw(widths[2]) << e.venue
+				<< " | " << setw(widths[3]) << e.date
+				<< " | " << setw(widths[4]) << (e.startTime + "-" + e.endTime)
+				<< " | " << setw(widths[5]) << e.status
+				<< " | " << setw(widths[6]) << e.paymentStatus
+				<< " | " << setw(widths[7]) << fixed << setprecision(2) << e.ticketPrice
+				<< " | " << setw(widths[8]) << e.availableTickets
+				<< " | " << setw(widths[9]) << e.organizerName
+				<< " |\n";
+			printLine(widths);
 		}
 	}
 
 	if (!hasEvents) {
 		cout << "You haven't created any events yet.\n";
 	}
-	cout << "\n";
+
 	pauseScreen();
 }
 
 void makePayment(vector<Event>& events, const string& username) {
 	clearScreen();
-	cout << "\n=== Unpaid Events ===\n";
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	cout << "\n=== Make Payment ===\n";
 
-	vector<int> unpaidIndexes;
-	for (int i = 0; i < events.size(); i++) {
-		if (events[i].paymentStatus == "Unpaid" && events[i].organizerName == username) {
-			unpaidIndexes.push_back(i);
-			cout << unpaidIndexes.size() << ". " // show 1-based selection
-				<< "\nEvent ID: " << events[i].id
-				<< "\nName: " << events[i].name
-				<< "\nVenue: " << events[i].venue
-				<< "\nDate: " << events[i].date
-				<< "\nTime: " << events[i].startTime << " - " << events[i].endTime
-				<< "\nOrganizer: " << events[i].organizerName
-				<< "\nStatus: " << events[i].status
-				<< "\nPayment Status: " << events[i].paymentStatus
-				<< "\n-----------------------------";
+	bool hasUnpaid = false;
+
+	// Adjusted column widths (Organizer included for consistency)
+	vector<int> widths = { 5, 15, 15, 12, 12, 12, 10, 12, 12, 15 };
+	vector<string> headers = {
+		"ID", "Name", "Venue", "Date", "Time",
+		"Status", "Payment", "Price(RM)", "Tickets", "Organizer"
+	};
+
+	// Print header
+	printLine(widths);
+	cout << "|";
+	for (size_t i = 0; i < headers.size(); i++) {
+		cout << " " << left << setw(widths[i]) << headers[i] << " |";
+	}
+	cout << "\n";
+	printLine(widths);
+
+	// List unpaid events
+	for (const auto& e : events) {
+		if (e.organizerName == username && e.paymentStatus == "Unpaid") {
+			hasUnpaid = true;
+			cout << "| " << left << setw(widths[0]) << e.id
+				<< " | " << setw(widths[1]) << e.name
+				<< " | " << setw(widths[2]) << e.venue
+				<< " | " << setw(widths[3]) << e.date
+				<< " | " << setw(widths[4]) << (e.startTime + "-" + e.endTime)
+				<< " | " << setw(widths[5]) << e.status
+				<< " | " << setw(widths[6]) << e.paymentStatus
+				<< " | " << setw(widths[7]) << fixed << setprecision(2) << e.ticketPrice
+				<< " | " << setw(widths[8]) << e.availableTickets
+				<< " | " << setw(widths[9]) << e.organizerName
+				<< " |\n";
+			printLine(widths);
 		}
 	}
 
-	if (unpaidIndexes.empty()) {
-		cout << "\nNo unpaid events available.\n";
+	if (!hasUnpaid) {
+		cout << "\nNo unpaid events found.\n";
+		pauseScreen();
 		return;
 	}
 
-	int selection;
-	cout << "\nSelect the number of the event to pay for: ";
-	cin >> selection;
+	// Ask for event ID
+	cout << "\nEnter the Event ID to pay for (Q to cancel): ";
+	string input;
+	getline(cin, input);
+	if (input == "Q" || input == "q") return;
 
-	// Validate user input
-	while (cin.fail() || selection < 1 || selection > unpaidIndexes.size()) {
-		cin.clear();
-		cin.ignore(100, '\n');
-		cout << "Invalid selection. Please try again: ";
-		cin >> selection;
+	int id;
+	try {
+		id = stoi(input);
+	}
+	catch (...) {
+		cout << "Invalid input.\n";
+		pauseScreen();
+		return;
 	}
 
-	int index = unpaidIndexes[selection - 1];
-	events[index].paymentStatus = "Paid";
+	auto it = find_if(events.begin(), events.end(), [id, &username](Event& e) {
+		return e.id == id && e.organizerName == username && e.paymentStatus == "Unpaid";
+		});
 
-	cout << "\nPayment successful for event: " << events[index].name << "\n";
+	if (it == events.end()) {
+		cout << "Invalid Event ID or payment already completed.\n";
+		pauseScreen();
+		return;
+	}
+
+	// Simulate payment
+	it->paymentStatus = "Paid";
+	cout << "\nPayment successful for Event ID " << id << " (" << it->name << ").\n";
+
 	pauseScreen();
 }
 
 void editEvents(vector<Event>& events, const string& username) {
 	clearScreen();
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
 	vector<int> editableIds;
 
 	cout << "\n=== Your Upcoming Events ===\n";
@@ -308,82 +373,94 @@ void editEvents(vector<Event>& events, const string& username) {
 	}
 
 	if (editableIds.empty()) {
-		cout << "\nNo upcoming events available to edit for your account.\n";
+		cout << "\nNo upcoming events available to edit.\n";
 		return;
 	}
 
 	int id;
-	cout << "\nEnter Event ID to edit: ";
-	cin >> id;
-	inputCheck(id, 1, events.size(), "Invalid Event ID. Please try again: ");
+	cout << "\nEnter Event ID to edit (Q to cancel): ";
+	string input;
+	getline(cin, input);
+	if (input == "Q" || input == "q") return;
+
+	try {
+		id = stoi(input);
+	}
+	catch (...) {
+		cout << "Invalid input.\n";
+		pauseScreen();
+		return;
+	}
 
 	auto it = find_if(events.begin(), events.end(), [id, &username](const Event& e) {
 		return e.id == id && e.status == "Upcoming" && e.organizerName == username;
 		});
 
 	if (it == events.end()) {
-		cout << "You cannot edit this event. It may belong to another user or is not upcoming.\n";
+		cout << "You cannot edit this event.\n";
+		pauseScreen();
 		return;
 	}
 
 	Event& e = *it;
-	cin.ignore();
-
 	bool condition = true;
 	do {
 		cout << "\n=== Editing Event: " << e.name << " (ID: " << e.id << ") ===\n";
-		cout << "1. Edit Name\n";
-		cout << "2. Edit Venue\n";
-		cout << "3. Edit Date\n";
-		cout << "4. Edit Start Time\n";
-		cout << "5. Edit End Time\n";
-		cout << "6. Edit Status\n";
-		cout << "7. Quit\n";
-		cout << "8. Edit Ticket Price\n";
-		cout << "Select an option: ";
+		cout << "1. Edit Name\n2. Edit Venue\n3. Edit Date\n4. Edit Start Time\n";
+		cout << "5. Edit End Time\n6. Edit Status\n7. Quit\n8. Edit Ticket Price\n";
+		cout << "Select an option (Q to cancel): ";
+
+		string choice;
+		getline(cin, choice);
+		if (choice == "Q" || choice == "q") return;
 
 		int selection;
-		cin >> selection;
-		inputCheck(selection, 1, 8, "Invalid Input! Please Retry [1-8]: ");
-		cin.ignore();
+		try { selection = stoi(choice); }
+		catch (...) { selection = -1; }
 
 		switch (selection) {
 		case 1:
-			cout << "Enter new name: ";
+			cout << "Enter new name (Q to cancel): ";
 			getline(cin, e.name);
+			if (e.name == "Q" || e.name == "q") return;
 			break;
 		case 2:
-			cout << "Enter new venue: ";
+			cout << "Enter new venue (Q to cancel): ";
 			getline(cin, e.venue);
+			if (e.venue == "Q" || e.venue == "q") return;
 			break;
 		case 3:
 			do {
-				cout << "Enter new date (DD-MM-YYYY): ";
+				cout << "Enter new date (DD-MM-YYYY, Q to cancel): ";
 				getline(cin, e.date);
-				if (!isValidDate(e.date)) cout << "Invalid date format! Please retry.\n";
+				if (e.date == "Q" || e.date == "q") return;
+				if (!isValidDate(e.date)) cout << "Invalid date format!\n";
 			} while (!isValidDate(e.date));
 			break;
 		case 4:
 			do {
-				cout << "Enter new start time (HH:MM): ";
+				cout << "Enter new start time (HH:MM, Q to cancel): ";
 				getline(cin, e.startTime);
-				if (!isValidTime(e.startTime)) cout << "Invalid time format! Please retry.\n";
+				if (e.startTime == "Q" || e.startTime == "q") return;
+				if (!isValidTime(e.startTime)) cout << "Invalid time format!\n";
 			} while (!isValidTime(e.startTime));
 			break;
 		case 5:
 			do {
-				cout << "Enter new end time (HH:MM): ";
+				cout << "Enter new end time (HH:MM, Q to cancel): ";
 				getline(cin, e.endTime);
-				if (!isValidTime(e.endTime)) cout << "Invalid time format! Please retry.\n";
+				if (e.endTime == "Q" || e.endTime == "q") return;
+				if (!isValidTime(e.endTime)) cout << "Invalid time format!\n";
 			} while (!isValidTime(e.endTime));
 			break;
 		case 6:
 			do {
-				cout << "Enter new status (Upcoming/Ongoing/Completed): ";
+				cout << "Enter new status (Upcoming/Ongoing/Completed, Q to cancel): ";
 				getline(cin, e.status);
+				if (e.status == "Q" || e.status == "q") return;
 				for (auto& c : e.status) c = tolower(c);
 				if (e.status != "upcoming" && e.status != "ongoing" && e.status != "completed") {
-					cout << "Invalid status! Please retry.\n";
+					cout << "Invalid status!\n";
 				}
 				else {
 					e.status[0] = toupper(e.status[0]);
@@ -395,18 +472,24 @@ void editEvents(vector<Event>& events, const string& username) {
 			condition = false;
 			break;
 		case 8:
-			cout << "Enter new ticket price: RM";
-			cin >> e.ticketPrice;
-			while (cin.fail() || e.ticketPrice <= 0) {
-				cin.clear();
-				cin.ignore(100, '\n');
-				cout << "Invalid price! Please enter a positive number: RM";
-				cin >> e.ticketPrice;
-			}
-			cout << "Ticket price updated successfully!\n";
+			do {
+				cout << "Enter new ticket price (Q to cancel): RM";
+				string priceInput;
+				getline(cin, priceInput);
+				if (priceInput == "Q" || priceInput == "q") return;
+				try {
+					e.ticketPrice = stod(priceInput);
+				}
+				catch (...) {
+					e.ticketPrice = -1;
+				}
+			} while (e.ticketPrice <= 0);
 			break;
+		default:
+			cout << "Invalid selection!\n";
 		}
 	} while (condition);
+
 	pauseScreen();
 }
 
