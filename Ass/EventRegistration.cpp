@@ -378,9 +378,9 @@ void editEvents(vector<Event>& events, const string& username) {
 	bool hasEvents = false;
 
 	// Print table header
-	cout << "+----+----------------------+------------+------------+----------+--------+-------------------+\n";
-	cout << "| ID | Name                 | Date       | Start Time | End Time | Status | Ticket Price (RM) |\n";
-	cout << "+----+----------------------+------------+------------+----------+--------+-------------------+\n";
+	cout << "+----+----------------------+------------+------------+----------+----------+-------------------+\n";
+	cout << "| ID | Name                 | Date       | Start Time | End Time | Status   | Ticket Price (RM) |\n";
+	cout << "+----+----------------------+------------+------------+----------+----------+-------------------+\n";
 
 	for (const auto& e : events) {
 		if (e.status == "Upcoming" && e.organizerName == username) {
@@ -397,7 +397,7 @@ void editEvents(vector<Event>& events, const string& username) {
 		}
 	}
 
-	cout << "+----+----------------------+------------+------------+----------+--------+-------------------+\n";
+	cout << "+----+----------------------+------------+------------+----------+----------+-------------------+\n";
 
 
 	if (!hasEvents) {
