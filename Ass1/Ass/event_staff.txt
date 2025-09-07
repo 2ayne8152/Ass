@@ -1,0 +1,15 @@
+ES0001,Jacob,Security,017-5252811,IAMMUSIC,10:00->15:30
+ES0002,Mary,Event Coordinator,018-1234567,Rock Legends Reunion,16:00->23:00
+ES0003,Larry,Medical Staff,017-1322345,Exclusive DJ VIP Night,00:40->01:00
+ES0004,Barry,Medical Staff,000-0000000,IAMMUSIC,01:00->17:00
+ES0005,Sally,Sound Engineer,019-9102341,Classical Evening Symphony,18:00->20:00
+ES0006,Mohammad Abdul bin Yussoff Razakh Firuallah,Janitor,017-3234123,EDM Night: Neon Beats,10:00->13:00
+ES0007,Natalie,Usher,017-9988776,Indie Acoustic Evening,18:00->22:30
+ES0008,John,Security,016-5566778,Street Music Festival,15:00->23:30
+ES0009,Aisha,Lighting Technician,019-4455667,Jazz & Wine Night,19:00->23:30
+ES0010,Tom,Stagehand,012-3344556,Pop Extravaganza,17:00->23:59
+ES0011,Karen,Ticketing Staff,017-2233445,Metal Storm Festival,17:00->00:30
+ES0012,Raj,Sound Technician,018-6677889,Summer Reggae Vibes,16:00->23:30
+ES0013,Chloe,VIP Attendant,016-1122334,Exclusive DJ VIP Night,21:00->02:30
+ES0014,Marcus,Photographer,019-3344556,Rock Legends Reunion,17:00->22:30
+ES0015,Fatima,Stage Manager,013-2233445,Golden Strings,09:00->17:30

@@ -1,0 +1,13 @@
+Projector, 5, Storage, In Storage
+Microphone, 15, Storage, In Storage
+Laptop, 8, Stage2, In Use
+Lighting Rig, 3, Storage, In Storage
+Camera, 3, Stage1, Available
+Walkie Talkie, 20, Storage, In Storage
+Stage Backdrop, 2, Stage2, Availble
+Sound Mixer, 4, Storage, In Storage
+LED Screen, 3, Stage3, In Use
+Camera, 3, Storage, In Storage
+Audio Interface, 2, Store Room, In Storage
+Speaker, 5, Store Room, In Storage
+Speaker, 5, Stage1, Available

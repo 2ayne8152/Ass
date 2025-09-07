@@ -1,0 +1,5 @@
+S1, Main Stage, 5000, true, "", 8000.00
+S2, Second Stage, 3000, true, "", 6000.00
+S3, Conference Hall, 800, true, "", 5000.00
+S4, Outside Area, 2000, true, "", 4000.00
+S5, VIP Lounge, 200, true, "", 13000.00
