@@ -40,4 +40,16 @@ inline void inputCheck(int& input, int min, int max, string errormsg) {
     }
 }
 
+inline string getInput(const string& prompt) {
+    string input;
+    cout << prompt;
+    getline(cin, input);
+    return input;
+}
+
+inline void pauseInterface() {
+    cout << "\nPress Enter to continue...";
+    cin.get();
+}
+
 #endif

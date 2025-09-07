@@ -66,12 +66,6 @@ bool isDuplicate(const string& username, const string& email, const string& role
     return false;
 }
 
-string getInput(const string& prompt) {
-    string input;
-    cout << prompt;
-    getline(cin, input);
-    return input;
-}
 
 string getHiddenInput(const string& prompt) {
     cout << prompt;
@@ -103,7 +97,9 @@ string getHiddenInput(const string& prompt) {
 void signUp(const string& role) {
     string username, email, password, confirmPassword;
 
-    cout << "\n===== " << (role == "staff" ? "STAFF" : "USER") << " SIGN UP =====" << endl;
+    cout << "\n===== "
+        << (role == "staff" ? "STAFF" : (role == "organizer" ? "ORGANIZER" : "USER"))
+        << " SIGN UP =====" << endl;
     cout << "(Type '0' at any time to cancel)\n";
 
     // Staff passkey check
@@ -182,12 +178,19 @@ void signUp(const string& role) {
     // Hash password before saving
     string hashedPassword = SHA256::hash(password);
 
-    string filename = (role == "staff" ? "staff.txt" : "users.txt");
+    string filename; 
+    if (role == "staff") 
+        filename = "staff.txt";
+    else if 
+        (role == "user") filename = "users.txt";
+    else if 
+        (role == "organizer") filename = "organizers.txt";
+
     ofstream file(filename, ios::app);
     if (file.is_open()) {
         file << username << " " << email << " " << hashedPassword << endl;
         file.close();
-        cout << (role == "staff" ? "Staff" : "User") << " sign up successful!\n";
+        cout << (role == "staff" ? "STAFF" : (role == "organizer" ? "ORGANIZER" : "USER")) << " sign up successful!\n";
     }
     else {
         cout << "Error: Could not open file.\n";
@@ -200,9 +203,18 @@ void login(const string& role) {
     string usernameOrEmail, password;
     bool success = false;
 
-    cout << "\n===== " << (role == "staff" ? "STAFF" : "USER") << " LOGIN =====" << endl;
+    cout << "\n===== "
+        << (role == "staff" ? "STAFF" : (role == "organizer" ? "ORGANIZER" : "USER"))
+        << " LOGIN =====" << endl;
     cout << "(Type '0' at any time to cancel)\n";
-    string filename = (role == "staff" ? "staff.txt" : "users.txt");
+
+    string filename; 
+    if (role == "staff") 
+        filename = "staff.txt";
+    else if (role == "user") 
+        filename = "users.txt";
+    else if (role == "organizer") 
+        filename = "organizers.txt";
 
     while (true) {
         usernameOrEmail = getInput("Enter username or email: ");
@@ -330,14 +342,17 @@ void homePageMenu(const string& message) {
                 switch (loginChoice) {
                 case 1:
                     login("staff");
+                    pauseInterface();
                     inLoginMenu = false;
                     break;
                 case 2:
                     login("user");
+                    pauseInterface();
                     inLoginMenu = false;
                     break;
                 case 3:
                     login("organizer");
+                    pauseInterface();
                     inLoginMenu = false;
                     break;
                 case 4:
@@ -382,14 +397,17 @@ void homePageMenu(const string& message) {
                 switch (signUpChoice) {
                 case 1:
                     signUp("staff");
+                    pauseInterface();
                     inSignUpMenu = false;
                     break;
                 case 2:
                     signUp("user");
+                    pauseInterface();
                     inSignUpMenu = false;
                     break;
                 case 3:
                     signUp("organizer");
+                    pauseInterface();
                     inSignUpMenu = false;
                     break;
                 case 4:
@@ -402,7 +420,6 @@ void homePageMenu(const string& message) {
             }
             break;
         }
-
         case 3:
             cout << "Exiting program. Goodbye!\n";
             return;
@@ -411,6 +428,11 @@ void homePageMenu(const string& message) {
 }
 
 void staffMainMenu(const string& username) {
+
+    vector<Event> events;
+    vector<Ticket> tickets;
+    loadEventsFromFile(events);
+    loadTicketsFromFile(tickets);
     int choice;
     string input;
 
@@ -442,7 +464,7 @@ void staffMainMenu(const string& username) {
             crisisMenu();
             break;
         case 3:
-            reportMenu();
+            reportMenu(events, tickets);
             break;
         case 4:
             cout << "Logging out...\n";

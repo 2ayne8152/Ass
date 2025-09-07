@@ -21,7 +21,6 @@ const string EVENTS_FILE = "events.txt";
 const string TICKETS_FILE = "tickets.txt";
 
 void userMainMenu(const string& username) {
-    
     vector<Event> events;
     vector<Ticket> tickets;
 
@@ -63,7 +62,7 @@ void userMainMenu(const string& username) {
             break;
         case 5:
             condition = false;
-			clearScreen();
+            clearScreen();
             return;
         }
     } while (condition);

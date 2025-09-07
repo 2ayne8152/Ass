@@ -4,116 +4,153 @@
 #include <sstream>
 #include <vector>
 #include <iomanip>
+#include "util.h"
+#include "events.h"
+#include "user.h"
 using namespace std;
 
-// --- Helper: Validate export file extension ---
-bool isTxtFile(const string& filename) {
-    if (filename.size() < 4) return false;
-    return filename.substr(filename.size() - 4) == ".txt";
+
+void monthlySalesReport(const vector<Event>& events, const vector<Ticket>& tickets) {
+    clearScreen();
+    cout << "\n=== Monthly Ticket Sales & Revenue Report ===\n";
+
+    string monthInput;
+    regex monthPattern(R"(^\d{4}-(0[1-9]|1[0-2])$)");
+
+    while (true) {
+        monthInput = getInput("Enter month (format YYYY-MM, e.g. 2025-09): ");
+        if (regex_match(monthInput, monthPattern)) {
+            break; // valid input
+        }
+        else {
+            cout << "Invalid format. Please use YYYY-MM with a valid month (01–12).\n";
+        }
+    }
+
+    int totalTickets = 0;
+    double totalRevenue = 0.0;
+    int totalEvents = 0;
+
+    // Print header
+    cout << "\nReport for " << monthInput << "\n";
+    cout << "+---------------------------------------------------------------------+\n";
+    cout << "| " << setw(5) << left << "ID"
+        << " | " << setw(28) << left << "Event Name"
+        << " | " << setw(10) << right << "Sold"
+        << " | " << setw(12) << right << "Revenue (RM)" << setw(6) << right << "|\n";
+    cout << "+---------------------------------------------------------------------+\n";
+
+    for (const auto& e : events) {
+        if (e.date.substr(0, 7) == monthInput) {
+            int sold = 0;
+            double revenue = 0.0;
+
+            // Calculate sales from tickets
+            for (const auto& t : tickets) {
+                if (t.eventID == e.id && t.status == "Paid") {
+                    sold += t.quantity;
+                    revenue += t.totalPrice;
+                }
+            }
+
+            if (sold > 0) {
+                totalTickets += sold;
+                totalRevenue += revenue;
+                totalEvents++;
+
+                cout << "| " << setw(5) << left << e.id
+                    << " | " << setw(28) << left << e.name.substr(0, 28)
+                    << " | " << setw(10) << right << sold
+                    << " | " << setw(12) << right << fixed << setprecision(2) << revenue
+                     << setw(6) << right << " |\n";
+            }
+        }
+    }
+
+    cout << "+---------------------------------------------------------------------+\n";
+
+    if (totalEvents == 0) {
+        cout << "No sales found for this month.\n";
+    }
+    else {
+        cout << "Summary: " << totalEvents << " events | "
+            << totalTickets << " tickets sold | RM"
+            << fixed << setprecision(2) << totalRevenue << " revenue\n";
+    }
+
+    pauseInterface();
 }
 
-// --- Event Report ---
-void generateEventReport() {
-    ifstream file("events.txt");
-    if (!file.is_open()) {
-        cout << "No events found.\n";
+void topEventsReport(const vector<Event>& events, const vector<Ticket>& tickets) {
+    clearScreen();
+    cout << "\n=== Top Events by Tickets Sold ===\n";
+
+    vector<EventSales> salesData;
+
+    // Collect sales data for each event
+    for (const auto& e : events) {
+        int sold = 0;
+        double revenue = 0.0;
+
+        for (const auto& t : tickets) {
+            if (t.eventID == e.id && t.status == "Paid") {
+                sold += t.quantity;
+                revenue += t.totalPrice;
+            }
+        }
+
+        if (sold > 0) {
+            salesData.push_back({ e.id, e.name, sold, revenue });
+        }
+    }
+
+    if (salesData.empty()) {
+        cout << "No ticket sales found.\n";
+        pauseInterface();
         return;
     }
 
-    cout << "\n===== EVENT REPORT =====\n";
-    string line;
-    while (getline(file, line)) {
-        cout << line << endl;
-    }
-    file.close();
-}
+    // Sort by tickets sold (descending)
+    sort(salesData.begin(), salesData.end(), [](const EventSales& a, const EventSales& b) {
+        return a.ticketsSold > b.ticketsSold;
+        });
 
-// --- Staff Report ---
-void generateStaffReport() {
-    ifstream file("staff.txt");
-    if (!file.is_open()) {
-        cout << "No staff found.\n";
-        return;
-    }
+    // Print header
+    cout << "+--------------------------------------------------------------------------+\n";
+    cout << "| " << setw(5) << left << "Rank"
+        << " | " << setw(5) << left << "ID"
+        << " | " << setw(28) << left << "Event Name"
+        << " | " << setw(10) << right << "Tickets"
+        << " | " << setw(12) << right << "Revenue (RM)" << " |\n";
+    cout << "+--------------------------------------------------------------------------+\n";
 
-    cout << "\n===== STAFF REPORT =====\n";
-    string username, email, password;
-    while (file >> username >> email >> password) {
-        cout << "Staff: " << username << " | Email: " << email << endl;
-    }
-    file.close();
-}
-
-// --- Equipment Report ---
-void generateEquipmentReport() {
-    ifstream file("equipment.txt");
-    if (!file.is_open()) {
-        cout << "No equipment found.\n";
-        return;
+    // Show top 5 (or fewer if less data)
+    int rank = 1;
+    for (const auto& s : salesData) {
+        if (rank > 5) break; // limit to top 5
+        cout << "| " << setw(5) << left << rank
+            << " | " << setw(5) << left << s.eventID
+            << " | " << setw(28) << left << s.name.substr(0, 28)
+            << " | " << setw(10) << right << s.ticketsSold
+            << " | " << setw(12) << right << fixed << setprecision(2) << s.revenue
+            << " |\n";
+        rank++;
     }
 
-    cout << "\n===== EQUIPMENT REPORT =====\n";
-    string line;
-    while (getline(file, line)) {
-        cout << line << endl;
-    }
-    file.close();
-}
-
-// --- Crisis Report ---
-void generateCrisisReport() {
-    ifstream file("crisis.txt");
-    if (!file.is_open()) {
-        cout << "No crisis records found.\n";
-        return;
-    }
-
-    cout << "\n===== CRISIS REPORT =====\n";
-    string line;
-    while (getline(file, line)) {
-        cout << line << endl;
-    }
-    file.close();
-}
-
-// --- Export Report ---
-void exportReport(const string& reportName, const string& filename) {
-    if (!isTxtFile(filename)) {
-        cout << "Error: Reports can only be exported as .txt files!\n";
-        return;
-    }
-
-    ifstream src(reportName + ".txt");
-    if (!src.is_open()) {
-        cout << "Error: Could not find " << reportName << ".txt to export.\n";
-        return;
-    }
-
-    ofstream dest(filename);
-    if (!dest.is_open()) {
-        cout << "Error: Could not create " << filename << ".\n";
-        return;
-    }
-
-    dest << src.rdbuf();
-    cout << "Report exported successfully to " << filename << "!\n";
-
-    src.close();
-    dest.close();
+    cout << "+--------------------------------------------------------------------------+\n";
+    pauseInterface();
 }
 
 // --- Menu ---
-void reportMenu() {
+void reportMenu(const vector<Event>& events, const vector<Ticket>& tickets) {
     int choice;
     string input;
 
     while (true) {
         cout << "\n===== REPORT MENU =====\n";
-        cout << "1. Generate Event Report\n";
-        cout << "2. Generate Staff Report\n";
-        cout << "3. Generate Equipment Report\n";
-        cout << "4. Generate Crisis Report\n";
-        cout << "5. Back to Main Menu\n";
+        cout << "1. Generate Sales Report\n";
+        cout << "2. Generate Top Event Report\n";
+        cout << "3. Back to Main Menu\n";
         cout << "Choose an option: ";
 
         getline(cin, input);
@@ -126,18 +163,12 @@ void reportMenu() {
 
         switch (choice) {
         case 1:
-            generateEventReport();  
+            monthlySalesReport(events, tickets);
             break;
         case 2:
-            generateStaffReport();  
+            topEventsReport(events, tickets);
             break;
         case 3:
-            generateEquipmentReport();  
-            break;
-        case 4:
-            generateCrisisReport();  
-            break;
-        case 5:
             cout << "Returning to main menu...\n";
             return;
         default:
