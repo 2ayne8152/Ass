@@ -29,10 +29,6 @@ bool validateShiftFormat(const string& shiftTime) {
     return regex_match(shiftTime, pattern);
 }
 
-//bool isValidEventName(const string& event) {
-//    return event.length() > 3 && event.length() <= 15;
-//}
-
 bool eventExists(const string& eventName) {
     ifstream file("events.txt");
     if (!file.is_open()) return false;
@@ -53,7 +49,6 @@ string fitToWidth(const string& text, size_t width) {
     if (text.size() <= width) return text;
     return text.substr(0, width - 3) + "..."; // add "..." if too long
 }
-
 
 vector<EventStaff> loadEventStaff() {
     vector<EventStaff> staffList;

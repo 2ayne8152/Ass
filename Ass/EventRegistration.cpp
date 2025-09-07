@@ -378,9 +378,9 @@ void editEvents(vector<Event>& events, const string& username) {
 	bool hasEvents = false;
 
 	// Print table header
-	cout << "+----+----------------------+------------+----------+-------------------+\n";
-	cout << "| ID | Name                 | Date       | Status   | Ticket Price (RM) |\n";
-	cout << "+----+----------------------+------------+----------+-------------------+\n";
+	cout << "+----+----------------------+------------+------------+----------+--------+-------------------+\n";
+	cout << "| ID | Name                 | Date       | Start Time | End Time | Status | Ticket Price (RM) |\n";
+	cout << "+----+----------------------+------------+------------+----------+--------+-------------------+\n";
 
 	for (const auto& e : events) {
 		if (e.status == "Upcoming" && e.organizerName == username) {
@@ -390,6 +390,8 @@ void editEvents(vector<Event>& events, const string& username) {
 			cout << "| " << setw(2) << left << e.id << " "
 				<< "| " << setw(20) << left << e.name.substr(0, 20) << " "
 				<< "| " << setw(10) << left << e.date << " "
+				<< "| " << setw(10) << left << e.startTime << " "
+				<< "| " << setw(8) << left << e.endTime << " "
 				<< "| " << setw(8) << left << e.status << " "
 				<< "| " << setw(17) << right << (to_string_fixed(e.ticketPrice, 2)) << " |\n";
 		}
@@ -433,8 +435,8 @@ void editEvents(vector<Event>& events, const string& username) {
 	bool condition = true;
 	do {
 		cout << "\n=== Editing Event: " << e.name << " (ID: " << e.id << ") ===\n";
-		cout << "1. Edit Name\n2. Edit Venue\n3. Edit Date\n4. Edit Start Time\n";
-		cout << "5. Edit End Time\n6. Edit Status\n7. Edit Ticket Price\n8. Quit\n";
+		cout << "1. Edit Name\n2. Edit Date\n3. Edit Start Time\n";
+		cout << "4. Edit End Time\n5. Edit Status\n6. Edit Ticket Price\n7. Quit\n";
 		cout << "Select an option (Q to cancel): ";
 
 		string choice;
@@ -452,11 +454,6 @@ void editEvents(vector<Event>& events, const string& username) {
 			if (e.name == "Q" || e.name == "q") return;
 			break;
 		case 2:
-			cout << "Enter new venue (Q to cancel): ";
-			getline(cin, e.venue);
-			if (e.venue == "Q" || e.venue == "q") return;
-			break;
-		case 3:
 			do {
 				cout << "Enter new date (DD-MM-YYYY, Q to cancel): ";
 				getline(cin, e.date);
@@ -464,7 +461,7 @@ void editEvents(vector<Event>& events, const string& username) {
 				if (!isValidDate(e.date)) cout << "Invalid date format!\n";
 			} while (!isValidDate(e.date));
 			break;
-		case 4:
+		case 3:
 			do {
 				cout << "Enter new start time (HH:MM, Q to cancel): ";
 				getline(cin, e.startTime);
@@ -472,7 +469,7 @@ void editEvents(vector<Event>& events, const string& username) {
 				if (!isValidTime(e.startTime)) cout << "Invalid time format!\n";
 			} while (!isValidTime(e.startTime));
 			break;
-		case 5:
+		case 4:
 			do {
 				cout << "Enter new end time (HH:MM, Q to cancel): ";
 				getline(cin, e.endTime);
@@ -480,7 +477,7 @@ void editEvents(vector<Event>& events, const string& username) {
 				if (!isValidTime(e.endTime)) cout << "Invalid time format!\n";
 			} while (!isValidTime(e.endTime));
 			break;
-		case 6:
+		case 5:
 			do {
 				cout << "Enter new status (Upcoming/Ongoing/Completed, Q to cancel): ";
 				getline(cin, e.status);
@@ -495,7 +492,7 @@ void editEvents(vector<Event>& events, const string& username) {
 				}
 			} while (true);
 			break;
-		case 7:
+		case 6:
 			do {
 				cout << "Enter new ticket price (Q to cancel): RM";
 				string priceInput;
@@ -509,8 +506,7 @@ void editEvents(vector<Event>& events, const string& username) {
 				}
 			} while (e.ticketPrice <= 0);
 			break;
-
-		case 8:
+		case 7:
 			condition = false;
 			break;
 		default:
