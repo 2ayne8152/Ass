@@ -22,3 +22,4 @@ struct Ticket {
 };
 
 void userMainMenu(const string& username);
+void loadTicketsFromFile(vector<Ticket>& tickets);
