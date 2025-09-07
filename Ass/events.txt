@@ -8,4 +8,4 @@
 8|Classical Evening Symphony|Conference Hall|2025-09-27|19:00|22:00|Upcoming|Unpaid|Golden Strings|65|750
 9|Summer Reggae Vibes|Outside Area|2025-09-28|17:00|23:00|Upcoming|Unpaid|IslandRhythm|50|1900
 10|Exclusive DJ VIP Night|VIP Lounge|2025-09-29|22:00|02:00|Upcoming|Unpaid|Luxe Beats|180|150
-11|IAMMUSIC|Main Stage|2025-02-20|21:00|23:00|Upcoming|Paid|Wayne|25|4900
+11|IAMMUSIC|Main Stage|24-02-2025|21:00|23:00|Upcoming|Unpaid|Wayne|25|5000
