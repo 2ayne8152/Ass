@@ -401,6 +401,45 @@ void updateStaffEventFromInput(vector<EventStaff>& staffList) {
     }
 }
 
+void updateStaffShiftFromInput(vector<EventStaff>& staffList) {
+    if (staffList.empty()) {
+        cout << "No event staff available to update.\n";
+        return;
+    }
+
+    string staffId;
+    cout << "Enter Staff ID to update shift time: ";
+    getline(cin, staffId);
+
+    bool found = false;
+    for (auto& staff : staffList) {
+        if (staff.staffId == staffId) {
+            cout << "Current Shift: " << staff.shiftTime << endl;
+
+            string newShift;
+            while (true) {
+                cout << "Enter New Shift Time (Format: HH:MM->HH:MM, e.g., 09:00->17:30): ";
+                getline(cin, newShift);
+
+                if (validateShiftFormat(newShift)) {
+                    staff.shiftTime = newShift;
+                    cout << "Shift time updated successfully for Staff ID: " << staffId << "\n";
+                    found = true;
+                    break;
+                }
+                else {
+                    cout << "Invalid format! Please use HH:MM->HH:MM in 24-hour format (e.g., 09:00->17:30)" << endl;
+                }
+            }
+            break;
+        }
+    }
+
+    if (!found) {
+        cout << "Staff with ID " << staffId << " not found.\n";
+    }
+}
+
 void manageEventStaffMenu(const vector<EventStaff>& staffList) {
     int choice;
     string input;
@@ -414,10 +453,10 @@ void manageEventStaffMenu(const vector<EventStaff>& staffList) {
         cout << "3. Remove Event Staff\n";
         cout << "4. View Staff for Specific Event\n";
         cout << "5. Search Staff by ID\n";
-        cout << "6. Update Staff Event\n";  
-        cout << "7. Back to Main Menu\n";
+        cout << "6. Update Staff Event\n";
+		cout << "7. Update Staff Shift Time\n";
+        cout << "8. Back to Main Menu\n";
         cout << "Choose an option: ";
-
         getline(cin, input);
         stringstream ss(input);
 
@@ -425,7 +464,6 @@ void manageEventStaffMenu(const vector<EventStaff>& staffList) {
             cout << "Invalid input. Please enter a number.\n";
             continue;
         }
-
         switch (choice) {
         case 1:
             displayAllEventStaff(workingList);
@@ -449,6 +487,10 @@ void manageEventStaffMenu(const vector<EventStaff>& staffList) {
             saveEventStaff(workingList);
             break;
         case 7:
+            updateStaffShiftFromInput(workingList);
+            saveEventStaff(workingList);
+            break;
+        case 8:
             system("cls");
             cout << "Returning to main menu...\n";
             return;
