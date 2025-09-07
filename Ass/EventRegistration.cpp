@@ -33,11 +33,11 @@ void eventMenu(const string& username) {
 
 	do {
 		clearScreen();
-		cout << "==== Venue Booking Menu ====\n";
-		cout << "1. Book Venue\n";
+		cout << "==== Event Menu ====\n";
+		cout << "1. Create Event\n";
 		cout << "2. Make Payment\n";
-		cout << "3. Edit Booking\n";
-		cout << "4. View Booking History\n";
+		cout << "3. Edit Events\n";
+		cout << "4. View Events\n";
 		cout << "5. Quit\n";
 		cout << "Select an option: ";
 
@@ -68,6 +68,8 @@ void eventMenu(const string& username) {
 			condition = false;
 			clearScreen();
 			return;
+		default:
+			pauseScreen();
 		}
 	} while (condition);
 }
@@ -358,22 +360,45 @@ void makePayment(vector<Event>& events, const string& username) {
 	pauseScreen();
 }
 
+string to_string_fixed(double value, int precision) {
+	ostringstream out;
+	out << fixed << setprecision(precision) << value;
+	return out.str();
+}
+
 void editEvents(vector<Event>& events, const string& username) {
 	clearScreen();
 	cin.ignore(numeric_limits<streamsize>::max(), '\n');
 	vector<int> editableIds;
 
 	cout << "\n=== Your Upcoming Events ===\n";
+
+	bool hasEvents = false;
+
+	// Print table header
+	cout << "+----+----------------------+------------+----------+-------------------+\n";
+	cout << "| ID | Name                 | Date       | Status   | Ticket Price (RM) |\n";
+	cout << "+----+----------------------+------------+----------+-------------------+\n";
+
 	for (const auto& e : events) {
 		if (e.status == "Upcoming" && e.organizerName == username) {
+			hasEvents = true;
 			editableIds.push_back(e.id);
-			cout << "ID: " << e.id << " | " << e.name << " | " << e.date
-				<< " | " << e.status << " | Ticket Price: RM" << e.ticketPrice << "\n";
+
+			cout << "| " << setw(2) << left << e.id << " "
+				<< "| " << setw(20) << left << e.name.substr(0, 20) << " "
+				<< "| " << setw(10) << left << e.date << " "
+				<< "| " << setw(8) << left << e.status << " "
+				<< "| " << setw(17) << right << (to_string_fixed(e.ticketPrice, 2)) << " |\n";
 		}
 	}
 
-	if (editableIds.empty()) {
+	cout << "+----+----------------------+------------+----------+-------------------+\n";
+
+
+	if (!hasEvents) {
 		cout << "\nNo upcoming events available to edit.\n";
+		pauseScreen();
 		return;
 	}
 
@@ -407,7 +432,7 @@ void editEvents(vector<Event>& events, const string& username) {
 	do {
 		cout << "\n=== Editing Event: " << e.name << " (ID: " << e.id << ") ===\n";
 		cout << "1. Edit Name\n2. Edit Venue\n3. Edit Date\n4. Edit Start Time\n";
-		cout << "5. Edit End Time\n6. Edit Status\n7. Quit\n8. Edit Ticket Price\n";
+		cout << "5. Edit End Time\n6. Edit Status\n7. Edit Ticket Price\n8. Quit\n";
 		cout << "Select an option (Q to cancel): ";
 
 		string choice;
@@ -469,9 +494,6 @@ void editEvents(vector<Event>& events, const string& username) {
 			} while (true);
 			break;
 		case 7:
-			condition = false;
-			break;
-		case 8:
 			do {
 				cout << "Enter new ticket price (Q to cancel): RM";
 				string priceInput;
@@ -485,8 +507,14 @@ void editEvents(vector<Event>& events, const string& username) {
 				}
 			} while (e.ticketPrice <= 0);
 			break;
+
+		case 8:
+			condition = false;
+			break;
 		default:
 			cout << "Invalid selection!\n";
+			pauseScreen();
+			break;
 		}
 	} while (condition);
 
