@@ -367,43 +367,68 @@ void searchStaffById(const vector<EventStaff>& staffList) {
 
 void updateStaffEventFromInput(vector<EventStaff>& staffList) {
     if (staffList.empty()) {
+        cout << "\n===== UPDATE STAFF EVENT =====\n";
         cout << "No event staff available to update.\n";
         return;
     }
 
     string staffId;
-    cout << "Enter Staff ID to update: ";
+    cout << "\n===== UPDATE STAFF EVENT =====\n";
+    cout << "Enter Staff ID to update (or type 'exit' to cancel): ";
     getline(cin, staffId);
+
+    if (staffId == "exit") {
+        cout << "Update cancelled.\n";
+        return;
+    }
 
     bool found = false;
     for (auto& staff : staffList) {
         if (staff.staffId == staffId) {
-            cout << "Current Event: " << staff.assignedEvent << endl;
+            cout << "\nStaff Found:\n";
+            cout << "ID      : " << staff.staffId << "\n";
+            cout << "Name    : " << staff.name << "\n";
+            cout << "Role    : " << staff.role << "\n";
+            cout << "Current Event: " << staff.assignedEvent << "\n";
 
             string newEvent;
-            cout << "Enter New Event: ";
-            getline(cin, newEvent);
+            while (true) {
+                cout << "Enter New Event (or type 'exit' to cancel): ";
+                getline(cin, newEvent);
 
-            if (!eventExists(newEvent)) {
-                cout << "Error: Event \"" << newEvent << "\" does not exist in events.txt.\n";
-                return;
+                if (newEvent == "exit") {
+                    cout << "Update cancelled.\n";
+                    return;
+                }
+
+                if (!eventExists(newEvent)) {
+                    cout << "Error: Event \"" << newEvent << "\" does not exist in events.txt.\n";
+                    continue;
+                }
+                break;
             }
 
             staff.assignedEvent = newEvent;
-            cout << "Event updated successfully for Staff ID: " << staffId << "\n";
+            cout << "\nEvent updated successfully for Staff ID: " << staffId << "\n";
+            cout << "Updated Event: " << staff.assignedEvent << "\n";
             found = true;
             break;
         }
     }
 
     if (!found) {
-        cout << "Staff with ID " << staffId << " not found.\n";
+        cout << "Staff with ID \"" << staffId << "\" not found.\n";
     }
 }
 
 void updateStaffShiftFromInput(vector<EventStaff>& staffList) {
+    cout << "\n========================================\n";
+    cout << "        UPDATE EVENT STAFF SHIFT        \n";
+    cout << "========================================\n";
+
     if (staffList.empty()) {
-        cout << "No event staff available to update.\n";
+        cout << "⚠️  No event staff available to update.\n";
+        cout << "========================================\n";
         return;
     }
 
@@ -414,7 +439,10 @@ void updateStaffShiftFromInput(vector<EventStaff>& staffList) {
     bool found = false;
     for (auto& staff : staffList) {
         if (staff.staffId == staffId) {
-            cout << "Current Shift: " << staff.shiftTime << endl;
+            cout << " Staff ID   : " << staff.staffId << "\n";
+            cout << " Name       : " << staff.name << "\n"; 
+            cout << " Current Shift: " << staff.shiftTime << "\n";
+            cout << "----------------------------------------\n";
 
             string newShift;
             while (true) {
@@ -423,12 +451,14 @@ void updateStaffShiftFromInput(vector<EventStaff>& staffList) {
 
                 if (validateShiftFormat(newShift)) {
                     staff.shiftTime = newShift;
-                    cout << "Shift time updated successfully for Staff ID: " << staffId << "\n";
+                    cout << "\n Shift time updated successfully for Staff ID: " << staffId << "\n";
+                    cout << " New Shift: " << staff.shiftTime << "\n";
+                    cout << "========================================\n";
                     found = true;
                     break;
                 }
                 else {
-                    cout << "Invalid format! Please use HH:MM->HH:MM in 24-hour format (e.g., 09:00->17:30)" << endl;
+                    cout << " Invalid format! Please use HH:MM->HH:MM in 24-hour format (e.g., 09:00->17:30).\n";
                 }
             }
             break;
@@ -436,10 +466,10 @@ void updateStaffShiftFromInput(vector<EventStaff>& staffList) {
     }
 
     if (!found) {
-        cout << "Staff with ID " << staffId << " not found.\n";
+        cout << "\n Staff with ID " << staffId << " not found.\n";
+        cout << "========================================\n";
     }
 }
-
 void manageEventStaffMenu(const vector<EventStaff>& staffList) {
     int choice;
     string input;
