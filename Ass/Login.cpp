@@ -66,6 +66,25 @@ bool isDuplicate(const string& username, const string& email, const string& role
     return false;
 }
 
+bool findUserFile(const string& usernameOrEmail, const string& role, string& filenameOut) {
+    if (role == "staff") filenameOut = "staff.txt";
+    else if (role == "user") filenameOut = "users.txt";
+    else if (role == "organizer") filenameOut = "organizers.txt";
+    else return false;
+
+    ifstream file(filenameOut);
+    if (!file.is_open()) return false;
+
+    string line, u, e, p;
+    while (getline(file, line)) {
+        stringstream ss(line);
+        ss >> u >> e >> p;
+        if (usernameOrEmail == u || usernameOrEmail == e) {
+            return true; // found
+        }
+    }
+    return false; // not found
+}
 
 string getHiddenInput(const string& prompt) {
     cout << prompt;
@@ -263,6 +282,111 @@ void login(const string& role) {
     }
 }
 
+void forgetPassword() {
+    while (true) {
+        clearScreen();
+        cout << "\n===== FORGOT PASSWORD =====\n";
+        cout << "Select your role:\n";
+        cout << "1. Staff\n";
+        cout << "2. User\n";
+        cout << "3. Organizer\n";
+        cout << "4. Back to Home\n";
+        cout << "Choose an option: ";
+        string roleChoice, role, filename;
+        getline(cin, roleChoice);
+
+        if (roleChoice == "1") 
+        { 
+            role = "staff"; filename = "staff.txt"; }
+        else if (roleChoice == "2") 
+        { 
+            role = "user"; filename = "users.txt"; 
+        }
+        else if (roleChoice == "3") 
+        { 
+            role = "organizer"; filename = "organizers.txt"; 
+        }
+        else if (roleChoice == "4") 
+            return;  // exit to home page
+        else {
+            cout << "Invalid choice! Please enter 1-4.\n";
+            pauseInterface();
+            continue; // back to role menu
+        }
+
+        while (true) {
+            string usernameOrEmail = getInput("Enter your username or email (0 to go back): ");
+            if (usernameOrEmail == "0") break; // back to role selection
+
+            // --- check if user exists in file ---
+            ifstream file(filename);
+            if (!file.is_open()) {
+                cout << "Error opening file.\n";
+                pauseInterface();
+                break;
+            }
+
+            bool found = false;
+            vector<string> lines;
+            string line, u, e, p;
+            while (getline(file, line)) {
+                stringstream ss(line);
+                ss >> u >> e >> p;
+                if (usernameOrEmail == u || usernameOrEmail == e) {
+                    found = true;
+                }
+                lines.push_back(line);
+            }
+            file.close();
+
+            if (!found) {
+                cout << "Username/email not found in system.\n";
+                pauseInterface();
+                continue; // retry username/email input
+            }
+
+            // --- enter new password ---
+            string newPassword, confirmPassword;
+            while (true) {
+                newPassword = getHiddenInput("Enter new password (0 to go back): ");
+                if (newPassword == "0") break; // back to username/email
+
+                if (!isValidPassword(newPassword)) {
+                    cout << "Invalid password. Must be at least 6 chars, with a letter & number.\n";
+                    continue;
+                }
+
+                confirmPassword = getHiddenInput("Confirm new password (0 to go back): ");
+                if (confirmPassword == "0") break;
+
+                if (confirmPassword != newPassword) {
+                    cout << "Passwords do not match. Try again.\n";
+                    continue;
+                }
+
+                // --- update password ---
+                string hashedPassword = SHA256::hash(newPassword);
+                ofstream outFile(filename);
+                for (const string& l : lines) {
+                    stringstream ss(l);
+                    ss >> u >> e >> p;
+                    if (usernameOrEmail == u || usernameOrEmail == e) {
+                        outFile << u << " " << e << " " << hashedPassword << endl;
+                    }
+                    else {
+                        outFile << l << endl;
+                    }
+                }
+                outFile.close();
+
+                cout << "Password reset successful! You can now log in.\n";
+                pauseInterface();
+                return; //back to home page after success
+            }
+        }
+    }
+}
+
 void homePageMenu(const string& message) {
     while (true) {
         clearScreen();
@@ -278,7 +402,8 @@ void homePageMenu(const string& message) {
         cout << "\n===== HOME PAGE =====\n";
         cout << "1. Log In\n";
         cout << "2. Sign Up\n";
-        cout << "3. Exit\n";
+        cout << "3. Forgot Password\n";
+        cout << "4. Exit\n";
 
         string choiceStr;
         int choice = 0;
@@ -420,12 +545,17 @@ void homePageMenu(const string& message) {
             }
             break;
         }
-        case 3:
+        case 3: 
+            forgetPassword();
+            break;
+        case 4:
             cout << "Exiting program. Goodbye!\n";
             return;
         }
     }
 }
+
+
 
 void staffMainMenu(const string& username) {
 
