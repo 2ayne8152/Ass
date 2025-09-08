@@ -15,3 +15,4 @@ using namespace std;
 
 void homePageMenu(const string& message = "");
 void staffMainMenu(const string& username);
+void updatePassword(const string& role, const string& usernameOrEmail);

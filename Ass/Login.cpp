@@ -305,7 +305,7 @@ void forgetPassword() {
         else if (roleChoice == "3") 
         { 
             role = "organizer"; filename = "organizers.txt"; 
-        }
+}
         else if (roleChoice == "4") 
             return;  // exit to home page
         else {
@@ -386,6 +386,7 @@ void forgetPassword() {
         }
     }
 }
+
 
 void homePageMenu(const string& message) {
     while (true) {
@@ -555,6 +556,94 @@ void homePageMenu(const string& message) {
     }
 }
 
+void updatePassword(const string& role, const string& usernameOrEmail) {
+    string filename;
+    if (role == "staff") filename = "staff.txt";
+    else if (role == "user") filename = "users.txt";
+    else if (role == "organizer") filename = "organizers.txt";
+    else return;
+
+    vector<string> fileData;
+    ifstream fileIn(filename);
+    if (!fileIn.is_open()) {
+        cout << "Error: Could not open file.\n";
+        return;
+    }
+
+    string line;
+    while (getline(fileIn, line)) {
+        fileData.push_back(line);
+    }
+    fileIn.close();
+
+    // Find user
+    bool found = false;
+    for (auto& record : fileData) {
+        string u, e, p;
+        stringstream ss(record);
+        ss >> u >> e >> p;
+        if (usernameOrEmail == u || usernameOrEmail == e) {
+            found = true;
+            string currentPassword;
+            while (true) {
+                currentPassword = getHiddenInput("Enter current password (0 to cancel): ");
+                if (currentPassword == "0") {
+                    cout << "Password update cancelled.\n";
+                    return; // exit the function
+                }
+
+                string hashedCurrent = SHA256::hash(currentPassword);
+                if (hashedCurrent != p) {
+                    cout << "Incorrect current password. Try again.\n";
+                    continue; // retry
+                }
+                break; // correct password, exit loop
+            }
+            
+            // Ask new password
+            string newPassword, confirmPassword;
+            while (true) {
+                newPassword = getHiddenInput("Enter new password: ");
+                if (!isValidPassword(newPassword)) {
+                    cout << "Invalid password. Must be at least 6 characters, include a letter and a number.\n";
+                    continue;
+                }
+                confirmPassword = getHiddenInput("Confirm new password: ");
+                if (newPassword != confirmPassword) {
+                    cout << "Passwords do not match. Try again.\n";
+                    continue;
+                }
+                break;
+            }
+
+            // Update password
+            string hashedNew = SHA256::hash(newPassword);
+            record = u + " " + e + " " + hashedNew;
+            cout << "Password updated successfully!\n";
+            cin.get();
+            break;
+        }
+    }
+
+    if (!found) {
+        cout << "User not found.\n";
+        return;
+    }
+
+    // Save updated file
+    ofstream fileOut(filename);
+    if (!fileOut.is_open()) {
+        cout << "Error: Could not save file.\n";
+        return;
+    }
+
+    for (const auto& record : fileData) {
+        fileOut << record << endl;
+    }
+    fileOut.close();
+
+    pauseInterface();
+}
 
 
 void staffMainMenu(const string& username) {
@@ -573,7 +662,8 @@ void staffMainMenu(const string& username) {
         cout << "1. Manage Event Staff\n";
         cout << "2. Crisis Management\n";
         cout << "3. Reports\n";
-        cout << "4. Logout\n";
+        cout << "4. Update Password\n";
+        cout << "5. Logout\n";
         cout << "Choose an option: ";
 
         getline(cin, input);
@@ -596,7 +686,10 @@ void staffMainMenu(const string& username) {
         case 3:
             reportMenu(events, tickets);
             break;
-        case 4:
+        case 4 : 
+            updatePassword("staff", username);
+            break;
+        case 5:
             cout << "Logging out...\n";
             return;
         default:

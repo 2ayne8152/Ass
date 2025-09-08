@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 #include "util.h"
+#include "login.h"
 using namespace std;
 
 
@@ -17,7 +18,7 @@ void organizerMainMenu(const string& username) {
         cout << "\n===== ORGANIZER MENU =====\n";
         cout << "Welcome, " << username << "!\n\n";
         cout << "1. Manage My Events\n";
-        cout << "2. View Reports\n";
+        cout << "2. Update Password\n";
         cout << "3. Logout\n";
         cout << "Choose an option: ";
 
@@ -34,13 +35,15 @@ void organizerMainMenu(const string& username) {
             eventMenu(username); 
             break;
         case 2:
-            cout << "Report viewing not implemented yet.\n";
+            updatePassword("organizer", username);
             break;
         case 3:
             cout << "Logging out...\n";
             return;
         default:
             cout << "Invalid choice. Please try again.\n";
+            pauseScreen();
         }
     }
+    
 }

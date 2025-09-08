@@ -8,6 +8,7 @@
 #include "events.h"
 #include "user.h"
 #include "util.h"
+#include "login.h"
 using namespace std;
 
 void viewAvailableEvents(const vector<Event>& events);
@@ -37,12 +38,13 @@ void userMainMenu(const string& username) {
         cout << "2. Book Tickets\n";
         cout << "3. View My Bookings\n";
         cout << "4. Make Payment\n";
-        cout << "5. Quit\n";
+        cout << "5. Update Password\n";
+        cout << "6. Quit\n";
         cout << "Select an option: ";
 
         int selection;
         cin >> selection;
-        inputCheck(selection, 1, 5, "Invalid Input! Please Retry [1-5]: ");
+        inputCheck(selection, 1, 6, "Invalid Input! Please Retry [1-6]: ");
 
         switch (selection) {
         case 1:
@@ -61,7 +63,10 @@ void userMainMenu(const string& username) {
             saveEventsToFile(events);
             saveTicketsToFile(tickets);
             break;
-        case 5:
+        case 5: 
+            updatePassword("user", username);
+            break;
+        case 6:
             condition = false;
             clearScreen();
             return;
