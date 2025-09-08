@@ -33,11 +33,11 @@ void eventMenu(const string& username) {
 
 	do {
 		clearScreen();
-		cout << "==== Venue Booking Menu ====\n";
-		cout << "1. Book Venue\n";
+		cout << "==== Event Menu ====\n";
+		cout << "1. Create Event\n";
 		cout << "2. Make Payment\n";
-		cout << "3. Edit Booking\n";
-		cout << "4. View Booking History\n";
+		cout << "3. Edit Events\n";
+		cout << "4. View Events\n";
 		cout << "5. Quit\n";
 		cout << "Select an option: ";
 
@@ -68,6 +68,8 @@ void eventMenu(const string& username) {
 			condition = false;
 			clearScreen();
 			return;
+		default:
+			pauseScreen();
 		}
 	} while (condition);
 }
@@ -97,6 +99,7 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 	for (size_t i = 0; i < stages.size(); ++i) {
 		cout << i + 1 << ". " << stages[i].stageName
 			<< " (Capacity: " << stages[i].capacity
+			<< ", Price/Day: RM" << fixed << setprecision(2) << stages[i].pricePerDay
 			<< ", Status: " << (stages[i].isOperational ? "Operational" : "Not Operational") << ")\n";
 		if (stages[i].isOperational) operationalStages.push_back(i);
 	}
@@ -129,6 +132,7 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 
 	string venue = stages[stageChoice - 1].stageName;
 	availableTickets = stages[stageChoice - 1].capacity;
+	double venueFee = stages[stageChoice - 1].pricePerDay;
 
 	// Input Date
 	do {
@@ -168,7 +172,7 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 		break;
 	} while (true);
 
-	// Conflict check (unchanged)
+	// Conflict check
 	bool conflict = false;
 	for (const auto& e : events) {
 		if (e.venue == venue && e.date == date) {
@@ -188,9 +192,9 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 
 	if (conflict) {
 		clearScreen();
-		cout << "+-----------------------------+\n";
+		cout << "+------------------------------+\n";
 		cout << "| Scheduling conflict detected |\n";
-		cout << "+-----------------------------+\n";
+		cout << "+------------------------------+\n";
 		pauseScreen();
 		return;
 	}
@@ -214,13 +218,15 @@ void createEvent(vector<Event>& events, const vector<Stage>& stages, const strin
 		}
 	} while (ticketPrice <= 0);
 
-	// Save Event
-	events.emplace_back(id, name, venue, date, startTime, endTime,
-		"Upcoming", username, ticketPrice, availableTickets);
+	events.emplace_back(
+		id, name, venue, date, startTime, endTime,
+		"Upcoming", venueFee, username, ticketPrice, availableTickets
+	);
 
 	cout << "\nEvent created successfully!\n";
 	pauseScreen();
 }
+
 
 void printLine(const vector<int>& widths) {
 	cout << "+";
@@ -284,11 +290,11 @@ void makePayment(vector<Event>& events, const string& username) {
 
 	bool hasUnpaid = false;
 
-	// Adjusted column widths (Organizer included for consistency)
-	vector<int> widths = { 5, 15, 15, 12, 12, 12, 10, 12, 12, 15 };
+	// Column widths aligned with headers
+	vector<int> widths = { 5, 15, 15, 12, 15, 12, 12, 15 };
 	vector<string> headers = {
 		"ID", "Name", "Venue", "Date", "Time",
-		"Status", "Payment", "Price(RM)", "Tickets", "Organizer"
+		"Status", "Payment", "Venue Fee(RM)"
 	};
 
 	// Print header
@@ -311,9 +317,7 @@ void makePayment(vector<Event>& events, const string& username) {
 				<< " | " << setw(widths[4]) << (e.startTime + "-" + e.endTime)
 				<< " | " << setw(widths[5]) << e.status
 				<< " | " << setw(widths[6]) << e.paymentStatus
-				<< " | " << setw(widths[7]) << fixed << setprecision(2) << e.ticketPrice
-				<< " | " << setw(widths[8]) << e.availableTickets
-				<< " | " << setw(widths[9]) << e.organizerName
+				<< " | " << setw(widths[7]) << fixed << setprecision(2) << e.venueFee
 				<< " |\n";
 			printLine(widths);
 		}
@@ -358,22 +362,47 @@ void makePayment(vector<Event>& events, const string& username) {
 	pauseScreen();
 }
 
+string to_string_fixed(double value, int precision) {
+	ostringstream out;
+	out << fixed << setprecision(precision) << value;
+	return out.str();
+}
+
 void editEvents(vector<Event>& events, const string& username) {
 	clearScreen();
 	cin.ignore(numeric_limits<streamsize>::max(), '\n');
 	vector<int> editableIds;
 
 	cout << "\n=== Your Upcoming Events ===\n";
+
+	bool hasEvents = false;
+
+	// Print table header
+	cout << "+----+----------------------+------------+------------+----------+----------+-------------------+\n";
+	cout << "| ID | Name                 | Date       | Start Time | End Time | Status   | Ticket Price (RM) |\n";
+	cout << "+----+----------------------+------------+------------+----------+----------+-------------------+\n";
+
 	for (const auto& e : events) {
 		if (e.status == "Upcoming" && e.organizerName == username) {
+			hasEvents = true;
 			editableIds.push_back(e.id);
-			cout << "ID: " << e.id << " | " << e.name << " | " << e.date
-				<< " | " << e.status << " | Ticket Price: RM" << e.ticketPrice << "\n";
+
+			cout << "| " << setw(2) << left << e.id << " "
+				<< "| " << setw(20) << left << e.name.substr(0, 20) << " "
+				<< "| " << setw(10) << left << e.date << " "
+				<< "| " << setw(10) << left << e.startTime << " "
+				<< "| " << setw(8) << left << e.endTime << " "
+				<< "| " << setw(8) << left << e.status << " "
+				<< "| " << setw(17) << right << (to_string_fixed(e.ticketPrice, 2)) << " |\n";
 		}
 	}
 
-	if (editableIds.empty()) {
+	cout << "+----+----------------------+------------+------------+----------+----------+-------------------+\n";
+
+
+	if (!hasEvents) {
 		cout << "\nNo upcoming events available to edit.\n";
+		pauseScreen();
 		return;
 	}
 
@@ -406,8 +435,8 @@ void editEvents(vector<Event>& events, const string& username) {
 	bool condition = true;
 	do {
 		cout << "\n=== Editing Event: " << e.name << " (ID: " << e.id << ") ===\n";
-		cout << "1. Edit Name\n2. Edit Venue\n3. Edit Date\n4. Edit Start Time\n";
-		cout << "5. Edit End Time\n6. Edit Status\n7. Quit\n8. Edit Ticket Price\n";
+		cout << "1. Edit Name\n2. Edit Date\n3. Edit Start Time\n";
+		cout << "4. Edit End Time\n5. Edit Status\n6. Edit Ticket Price\n7. Quit\n";
 		cout << "Select an option (Q to cancel): ";
 
 		string choice;
@@ -425,11 +454,6 @@ void editEvents(vector<Event>& events, const string& username) {
 			if (e.name == "Q" || e.name == "q") return;
 			break;
 		case 2:
-			cout << "Enter new venue (Q to cancel): ";
-			getline(cin, e.venue);
-			if (e.venue == "Q" || e.venue == "q") return;
-			break;
-		case 3:
 			do {
 				cout << "Enter new date (DD-MM-YYYY, Q to cancel): ";
 				getline(cin, e.date);
@@ -437,7 +461,7 @@ void editEvents(vector<Event>& events, const string& username) {
 				if (!isValidDate(e.date)) cout << "Invalid date format!\n";
 			} while (!isValidDate(e.date));
 			break;
-		case 4:
+		case 3:
 			do {
 				cout << "Enter new start time (HH:MM, Q to cancel): ";
 				getline(cin, e.startTime);
@@ -445,7 +469,7 @@ void editEvents(vector<Event>& events, const string& username) {
 				if (!isValidTime(e.startTime)) cout << "Invalid time format!\n";
 			} while (!isValidTime(e.startTime));
 			break;
-		case 5:
+		case 4:
 			do {
 				cout << "Enter new end time (HH:MM, Q to cancel): ";
 				getline(cin, e.endTime);
@@ -453,7 +477,7 @@ void editEvents(vector<Event>& events, const string& username) {
 				if (!isValidTime(e.endTime)) cout << "Invalid time format!\n";
 			} while (!isValidTime(e.endTime));
 			break;
-		case 6:
+		case 5:
 			do {
 				cout << "Enter new status (Upcoming/Ongoing/Completed, Q to cancel): ";
 				getline(cin, e.status);
@@ -468,10 +492,7 @@ void editEvents(vector<Event>& events, const string& username) {
 				}
 			} while (true);
 			break;
-		case 7:
-			condition = false;
-			break;
-		case 8:
+		case 6:
 			do {
 				cout << "Enter new ticket price (Q to cancel): RM";
 				string priceInput;
@@ -485,8 +506,13 @@ void editEvents(vector<Event>& events, const string& username) {
 				}
 			} while (e.ticketPrice <= 0);
 			break;
+		case 7:
+			condition = false;
+			break;
 		default:
 			cout << "Invalid selection!\n";
+			pauseScreen();
+			break;
 		}
 	} while (condition);
 
@@ -508,6 +534,7 @@ void saveEventsToFile(const vector<Event>& events) {
 			<< e.startTime << "|"
 			<< e.endTime << "|"
 			<< e.status << "|"
+			<< e.venueFee << "|"        // ✅ Save venueFee
 			<< e.paymentStatus << "|"
 			<< e.organizerName << "|"
 			<< e.ticketPrice << "|"
@@ -531,18 +558,28 @@ void loadEventsFromFile(vector<Event>& events) {
 		Event e;
 		string token;
 
-		// Read ID safely
+		// ID
 		if (!getline(ss, token, '|')) continue;
 		try { e.id = stoi(token); }
 		catch (...) { continue; }
 
+		// Basic strings
 		getline(ss, e.name, '|');
 		getline(ss, e.venue, '|');
 		getline(ss, e.date, '|');
 		getline(ss, e.startTime, '|');
 		getline(ss, e.endTime, '|');
 		getline(ss, e.status, '|');
+
+		// Venue fee
+		getline(ss, token, '|');
+		try { e.venueFee = stod(token); }
+		catch (...) { e.venueFee = 0.0; }
+
+		// Payment status
 		getline(ss, e.paymentStatus, '|');
+
+		// Organizer
 		getline(ss, e.organizerName, '|');
 
 		// Ticket price
